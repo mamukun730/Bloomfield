@@ -669,31 +669,22 @@ namespace PWM {
 	}
 
 	void Motor::Init() {
-		MTU.TSTR.BIT.CST4 = 0;
+		MTU.TSTR.BIT.CST0 = 0;
 
-		IPR(MTU4, TGIA4) = 15;
-		IEN(MTU4, TGIA4) = 1;
+		MTU0.TCNT = 0x00;
+		MTU0.TCR.BIT.TPSC = 0;			// PCLK / 1
+		MTU0.TCR.BIT.CKEG = 0;			// 立ち上がりカウント
+		MTU0.TCR.BIT.CCLR = 6;			// Reset: TGRD
+		MTU0.TMDR.BIT.MD = 3;			// PWM2
+		MTU0.TIORH.BIT.IOA = 2;			// TGRA: Low-High
+		MTU0.TIORH.BIT.IOB = 0;			// TGRB
+		MTU0.TIORL.BIT.IOC = 2;			// TGRC: Low-High
+		MTU0.TIORL.BIT.IOD = 0;			// TGRD
 
-		IPR(MTU4, TGIB4) = 14;
-		IEN(MTU4, TGIB4) = 1;
-
-		IPR(MTU4, TGID4) = 13;
-		IEN(MTU4, TGID4) = 1;
-
-		MTU4.TCNT = 0x00;
-		MTU4.TCR.BIT.TPSC = 0;			// PCLK / 1
-		MTU4.TCR.BIT.CKEG = 0;			// 立ち上がりカウント
-		MTU4.TCR.BIT.CCLR = 1;			// Reset: TGRA
-		MTU4.TMDR.BIT.MD = 2;
-
-		MTU4.TIER.BIT.TGIEA = 1;
-		MTU4.TIER.BIT.TGIEB = 1;
-		MTU4.TIER.BIT.TGIED = 1;
-
-		MTU4.TGRA = MOTOR_OPCYCLE;
-		MTU4.TGRB = MOTOR_OPCYCLE;
-		MTU4.TGRC = MOTOR_OPCYCLE;
-		MTU4.TGRD = MOTOR_OPCYCLE;
+		MTU0.TGRA = MOTOR_OPCYCLE;
+		MTU0.TGRB = MOTOR_OPCYCLE;
+		MTU0.TGRC = MOTOR_OPCYCLE;
+		MTU0.TGRD = MOTOR_OPCYCLE;
 
 		MOTOR_CTRL_L = 0;
 		MOTOR_CTRL_R = 0;
@@ -723,46 +714,234 @@ namespace PWM {
 		}
 	}
 
+	void Motor::SetDuty() {
+//		static int16_t error_sensor = 0, error_sensor_last = 0;
+		int16_t error_sensor = 0;
+		static float v_last_diff = 0.0, av_last_diff = 0.0;
+		float a_velocity_wall = 0.0, error = 0.0;
+		float v_actual = 0.0, v_target = 0.0;
+		float av_actual = 0.0, av_target = 0.0;
+		float duty_r = 0.0, duty_l = 0.0, torque_r = 0.0, torque_l = 0.0;
+		float ff_r = 0.0, ff_l = 0.0, fb_r = 0.0, fb_l = 0.0, battery_v = 0.0;
+		float g_p_wall = 0.0;
+
+		v_actual = Velocity.GetValue(true);
+		v_target = Velocity.GetValue(false);
+
+		av_actual = A_Velocity.GetValue(true);
+		av_target = A_Velocity.GetValue(false);
+
+		if (WallPFlag.GetValue()) {
+			error_sensor = Status::Calc::WallControlQuantity();
+			a_velocity_wall = -(GAIN_P_WALL * (float)error_sensor);
+			A_Velocity.SetValue(false, a_velocity_wall);
+		}
+
+		fb_r = (GAIN_P_ENCODER * (v_target - v_actual) + (GAIN_I_ENCODER * VelocityDiff.GetValue()) + (GAIN_D_ENCODER * ((v_target - v_actual) - v_last_diff)));
+		fb_l = (GAIN_P_ENCODER * (v_target - v_actual) + (GAIN_I_ENCODER * VelocityDiff.GetValue()) + (GAIN_D_ENCODER * ((v_target - v_actual) - v_last_diff)));
+
+		fb_r += (GAIN_P_GYRO * (av_target - av_actual) + (GAIN_I_GYRO * A_VelocityDiff.GetValue()) + (GAIN_D_GYRO * ((av_target - av_actual) - av_last_diff)));
+		fb_l -= (GAIN_P_GYRO * (av_target - av_actual) + (GAIN_I_GYRO * A_VelocityDiff.GetValue()) + (GAIN_D_GYRO * ((av_target - av_actual) - av_last_diff)));
+
+		v_last_diff = v_target - v_actual;
+		av_last_diff = av_target - av_actual;
+
+		MTU0.TCNT = 0x00;
+
+		if (fb_r > 0.0) {
+			MOTOR_CTRL_R = 1;
+		} else {
+			MOTOR_CTRL_R = 0;
+		}
+
+		if (fb_l > 0.0) {
+			MOTOR_CTRL_L = 1;
+		} else {
+			MOTOR_CTRL_L = 0;
+		}
+
+		fb_r = fabsf(fb_r);
+		fb_l = fabsf(fb_l);
+
+		if ((MOTOR_OPCYCLE - (uint16_t)fb_r) < MOTOR_DUTY_MAX) {
+			MTU0.TGRC = MOTOR_DUTY_MAX;
+//		} else if (((MOTOR_OPCYCLE - (uint16_t)fb_r) > MOTOR_DUTY_MIN) && (fb_r > 0.0)) {
+//			MTU4.TGRB = MOTOR_DUTY_MIN;
+		} else {
+			MTU0.TGRC = (MOTOR_OPCYCLE - (uint16_t)fb_r);
+		}
+
+		if ((MOTOR_OPCYCLE - (uint16_t)fb_l) < MOTOR_DUTY_MAX) {
+			MTU0.TGRA = MOTOR_DUTY_MAX;
+//		} else if (((MOTOR_OPCYCLE - (uint16_t)fb_l) > MOTOR_DUTY_MIN) && (fb_l > 0.0)) {
+//			MTU4.TGRD = MOTOR_DUTY_MIN;
+		} else {
+			MTU0.TGRA = (MOTOR_OPCYCLE - (uint16_t)fb_l);
+		}
+	}
+
 	void Motor::Enable() {
-		MTU4.TGRA = MOTOR_OPCYCLE;
-		MTU4.TGRB = MOTOR_OPCYCLE;
-		MTU4.TGRC = MOTOR_OPCYCLE;
-		MTU4.TGRD = MOTOR_OPCYCLE;
+		MTU0.TGRA = MOTOR_OPCYCLE;
+		MTU0.TGRB = MOTOR_OPCYCLE;
+		MTU0.TGRC = MOTOR_OPCYCLE;
+		MTU0.TGRD = MOTOR_OPCYCLE;
 
-		PORT3.PODR.BIT.B1 = 0;
-		PORT5.PODR.BIT.B4 = 0;
+		PORTB.PMR.BIT.B1 = 1;
+		PORTB.PMR.BIT.B3 = 1;
 
-//		Interface::Encoder::Enable();
-		MTU.TSTR.BIT.CST4 = 1;
+		Status::Reset();
+		System::Interface::Encoder_Enable();
+		MTU.TSTR.BIT.CST0 = 1;
 	}
 
 	void Motor::Disable() {
-//		Interface::Encoder::Disable();
+		System::Interface::Encoder_Disable();
 
-		MTU4.TGRA = MOTOR_OPCYCLE;
-		MTU4.TGRB = MOTOR_OPCYCLE;
-		MTU4.TGRC = MOTOR_OPCYCLE;
-		MTU4.TGRD = MOTOR_OPCYCLE;
+		MTU0.TGRA = MOTOR_OPCYCLE;
+		MTU0.TGRB = MOTOR_OPCYCLE;
+		MTU0.TGRC = MOTOR_OPCYCLE;
+		MTU0.TGRD = MOTOR_OPCYCLE;
 
 		MOTOR_CTRL_L = 0;
 		MOTOR_CTRL_R = 0;
 
-		PORT3.PODR.BIT.B1 = 0;
-		PORT5.PODR.BIT.B4 = 0;
+		MTU.TSTR.BIT.CST0 = 0;
 
-		MTU.TSTR.BIT.CST4 = 0;
+		PORTB.PMR.BIT.B1 = 0;
+		PORTB.PMR.BIT.B3 = 0;
+		PORTB.PODR.BIT.B1 = 0;
+		PORTB.PODR.BIT.B3 = 0;
+
+	}
+
+	void Motor::AccelDecel(float velocity, float accel, bool half_block) {
+		float deceleration_distance = 0.0;
+
+		WallPFlag.SetValue(true);
+
+		if (half_block) {
+//			if ((velocity < 1.0) && Status::Sensor::CheckWallExist(SIDE_FORWARD)) {
+//				Distance.SetValue(35.0);
+//			} else {
+				Distance.SetValue(SECTION_STRAIGHT / 2.0);
+//			}
+		}
+
+		if (accel < 0.0) {
+//			Mystat::Status::EnableWallEdgeDetect(false);
+
+			deceleration_distance = ((velocity * velocity - Velocity.GetValue(false) * Velocity.GetValue(false)) / (2.0 * accel));
+			while ((Distance.GetValue() < (SECTION_STRAIGHT - deceleration_distance)) && ExecuteFlag.GetValue());
+		} else {
+//			Mystat::Status::EnableWallEdgeDetect(true);
+		}
+
+		TargetVelocity.SetValue(velocity);
+		Accel.SetValue(false, accel);
+
+		while ((Distance.GetValue() < SECTION_STRAIGHT) && ExecuteFlag.GetValue()) {
+			if ((accel < 0.0) && (Velocity.GetValue(false) <= 5.0)) {
+				Velocity.SetValue(false, 5.0);
+				Accel.SetValue(false, 0.0);
+			}
+		}
+
+		if (TargetVelocity.GetValue() <= 1.0) {
+//			WallPFlag.SetValue(false);
+			Status::Reset();
+		}
+
+		Distance.SetValue(0.0);
+	}
+
+	void Motor::Run(uint8_t block, bool half_block) {
+		volatile uint8_t cnt = 0;
+
+		WallPFlag.SetValue(true);
+//		Mystat::Status::EnableWallEdgeDetect(true);
+
+		if (block > 0) {
+			while (cnt < block) {
+				while (((Distance.GetValue() < SECTION_STRAIGHT) && (Velocity.GetValue(false) > 0.0)) && ExecuteFlag.GetValue());
+				Distance.SetValue(0.0);
+				cnt++;
+			}
+		} else {
+			Distance.SetValue(SECTION_STRAIGHT / 2.0);
+			while (((Distance.GetValue() < SECTION_STRAIGHT) && (Velocity.GetValue(false) > 0.0)) && ExecuteFlag.GetValue());
+			Distance.SetValue(0.0);
+		}
+	}
+
+	void Motor::Turning(bool opposite, int8_t dir) {
+		float accel_distance = ((TURN_ANGLE_SPEED * TURN_ANGLE_SPEED) / (TURN_ANGLE_ACCEL * 2.0));
+		float turn_angle = 0.0;
+		int8_t turn_dir = dir;
+
+		if (opposite) {
+			turn_angle = TURN_ANGLE_OPPOSITE;
+			turn_dir = 1;
+		} else {
+			turn_angle = TURN_ANGLE_RIGHT;
+		}
+
+		Status::Reset();
+		A_Accel.SetValue(false, (float)turn_dir * TURN_ANGLE_ACCEL);
+		WallPFlag.SetValue(false);
+//		Mystat::Status::EnableWallEdgeDetect(false);
+
+		if (turn_dir > 0) {
+			while ((A_Velocity.GetValue(false) < TURN_ANGLE_SPEED) && ExecuteFlag.GetValue());
+		} else {
+			while ((A_Velocity.GetValue(false) > -TURN_ANGLE_SPEED) && ExecuteFlag.GetValue());
+		}
+
+		A_Accel.SetValue(false, 0.0);
+
+		if (turn_dir > 0) {
+			while ((Degree.GetValue() < (turn_angle - accel_distance)) && ExecuteFlag.GetValue());
+		} else {
+			while ((Degree.GetValue() > -(turn_angle - accel_distance)) && ExecuteFlag.GetValue());
+		}
+
+		A_Accel.SetValue(false, -(float)turn_dir * TURN_ANGLE_ACCEL);
+
+		if (turn_dir > 0) {
+			while ((Degree.GetValue() <= turn_angle) && (A_Velocity.GetValue(false) > 0.0) && ExecuteFlag.GetValue()) {
+				if (A_Velocity.GetValue(false) < 2.5) {
+					A_Velocity.SetValue(false, 2.5);
+					A_Accel.SetValue(false, 0.0);
+				}
+			}
+		} else {
+			while ((Degree.GetValue() >= -turn_angle) && (A_Velocity.GetValue(false) < 0.0) && ExecuteFlag.GetValue()) {
+				if (A_Velocity.GetValue(false) > -2.5) {
+					A_Velocity.SetValue(false, -2.5);
+					A_Accel.SetValue(false, 0.0);
+				}
+			}
+		}
+
+		Status::Reset();
+//		Mystat::Status::AddSectionDistance(-10.0);
 	}
 }
 
-void Timer_MTU4A() {
-	PORT3.PODR.BIT.B1 = 0;
-	PORT5.PODR.BIT.B4 = 0;
-}
+/*
 
-void Timer_MTU4B() {
-	PORT3.PODR.BIT.B1 = 1;
-}
+	ExecuteFlag.SetValue(true);
+	PWM::Motor::Enable();
 
-void Timer_MTU4D() {
-	PORT5.PODR.BIT.B4 = 1;
-}
+	Accel.SetValue(false, 2000.0F);
+	while(Velocity.GetValue(false) < 360.0F);
+	Velocity.SetValue(false, 360.0F);
+	Accel.SetValue(false, -2000.0F);
+	while(Velocity.GetValue(false) > 240.0F);
+	Velocity.SetValue(false, 240.0F);
+	Accel.SetValue(false, 0.0F);
+	System::Timer::wait_ms(1000);
+
+	PWM::Motor::Disable();
+	ExecuteFlag.SetValue(false);
+
+ */

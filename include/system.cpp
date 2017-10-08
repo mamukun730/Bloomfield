@@ -62,12 +62,12 @@ namespace System {
 		MPC.P30PFS.BIT.PSEL = 0x0A;		// RXD1 [p.729]
 
 		PORT4.PDR.BYTE = 0xA0;
-		MPC.P40PFS.BIT.ASEL = 1;
-		MPC.P41PFS.BIT.ASEL = 1;
-		MPC.P42PFS.BIT.ASEL = 1;
-		MPC.P43PFS.BIT.ASEL = 1;
-		MPC.P44PFS.BIT.ASEL = 1;
-		MPC.P46PFS.BIT.ASEL = 1;
+		MPC.P40PFS.BIT.ASEL = 1;		// AN000
+		MPC.P41PFS.BIT.ASEL = 1;		// AN001
+		MPC.P42PFS.BIT.ASEL = 1;		// AN002
+		MPC.P43PFS.BIT.ASEL = 1;		// AN003
+		MPC.P44PFS.BIT.ASEL = 1;		// AN004
+		MPC.P46PFS.BIT.ASEL = 1;		// AN006
 
 		PORT5.PDR.BYTE = 0xFF;
 		PORT6.PDR.BYTE = 0xFF;
@@ -75,7 +75,10 @@ namespace System {
 		PORT8.PDR.BYTE = 0xFF;
 		PORT9.PDR.BYTE = 0xFF;
 		PORTA.PDR.BYTE = 0xFC;
+
 		PORTB.PDR.BYTE = 0xBF;
+		MPC.PB1PFS.BIT.PSEL = 0x01;		// MTIOC0C [p.740]
+		MPC.PB3PFS.BIT.PSEL = 0x01;		// MTIOC0A
 
 		PORTC.PDR.BYTE = 0x7B;			// SSLA0 GPIOで代用
 		MPC.PC5PFS.BIT.PSEL = 0x0D;		// RSPCKA [p.744]
@@ -85,8 +88,8 @@ namespace System {
 		PORTD.PDR.BYTE = 0xFF;
 
 		PORTE.PDR.BYTE = 0xFC;
-		MPC.PE0PFS.BIT.ASEL = 1;
-		MPC.PE1PFS.BIT.ASEL = 1;
+		MPC.PE0PFS.BIT.ASEL = 1;		// AN008
+		MPC.PE1PFS.BIT.ASEL = 1;		// AN009
 		MPC.PE5PFS.BIT.PSEL = 0x02;		// MTIOC2B [p.747]
 
 		PORTF.PDR.BYTE = 0xFF;
@@ -108,7 +111,7 @@ namespace System {
 		PORT8.PMR.BYTE = 0x00;
 		PORT9.PMR.BYTE = 0x00;
 		PORTA.PMR.BYTE = 0x00;
-		PORTB.PMR.BYTE = 0x00;
+		PORTB.PMR.BYTE = 0x0A;			// OB 0000 1010
 		PORTC.PMR.BYTE = 0xE0;			// 0B 1110 0000
 		PORTD.PMR.BYTE = 0x00;
 		PORTE.PMR.BYTE = 0x20;			// 0B 0010 0000
@@ -118,6 +121,7 @@ namespace System {
 	}
 
 	void SetUp::Functions() {
+		// Interface LEDは別にInit呼び出し(CMT利用)
 		ADC::Init();
 		Timer::Init();
 		Flash::Init();
@@ -126,6 +130,8 @@ namespace System {
 
 		PWM::Buzzer::Init();
 		PWM::Motor::Init();
+
+		Interface::InitEncoder();
 	}
 
 	void SetUp::StartCheck() {
@@ -137,7 +143,7 @@ namespace System {
 		sprintf(senddata, "\n*** StartUp Check ***\n\n");
 		SCI::SendChar(senddata);
 
-		batt_voltage = ADC::BatteryVoltage();
+		batt_voltage = ADC::GetBatteryVoltage();
 		sprintf(senddata, "Battery:\t\t%f [V]\n", batt_voltage);
 		SCI::SendChar(senddata);
 
@@ -154,7 +160,7 @@ namespace System {
 		} else {
 			address = System::RSPI::ReadData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_DEVICEID);
 
-			sprintf(senddata, "Gyro Device ID:\t\t0x%x\n", address);
+			sprintf(senddata, "Gyro Device ID:\t\t0x%2x\n", address);
 			SCI::SendChar(senddata);
 
 			if (address != RSPI_DATA_GYRO_DEVICEID) {
@@ -168,7 +174,25 @@ namespace System {
 					System::Timer::wait_ms(500);
 				}
 			}
+
+			System::RSPI::WriteData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_PWR_MGMT1, RSPI_DATA_GYRO_PWR_MGMT1);
+			System::RSPI::WriteData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_PWR_MGMT2, RSPI_DATA_GYRO_PWR_MGMT2);
+			System::RSPI::WriteData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_SMPRT_DIV, RSPI_DATA_GYRO_SMPRT_DIV);
+			System::RSPI::WriteData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_CONFIG, RSPI_DATA_GYRO_CONFIG);
+			System::RSPI::WriteData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_GYROCONFIG, RSPI_DATA_GYRO_GYROCONFIG);
+
+			sprintf(senddata, "Gyro PWR MGMT1:\t\t0x%2x\n", System::RSPI::ReadData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_PWR_MGMT1));
+			SCI::SendChar(senddata);
+
+			sprintf(senddata, "Gyro PWR MGMT2:\t\t0x%2x\n", System::RSPI::ReadData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_PWR_MGMT2));
+			SCI::SendChar(senddata);
 		}
+
+		sprintf(senddata, "\n");
+		SCI::SendChar(senddata);
+	}
+
+	void SetUp::CreateClass() {
 	}
 
 // ADConverter
@@ -184,27 +208,107 @@ namespace System {
 		S12AD.ADANS0.BIT.ANS0 = 0x00;	// 対象ch [0-7ch]
 	}
 
-	void ADC::ChSelect(unsigned int ch) {
+	void ADC::ChSelect(uint16_t ch) {
 		S12AD.ADANS0.BIT.ANS0 = ch;
 	}
 
 	void ADC::StartConvert() {
 		S12AD.ADCSR.BIT.ADST = 1;
 
-		for (volatile unsigned int i = 0; i < 10; i++);
+		for (volatile uint8_t i = 0; i < 10; i++);
 		while (S12AD.ADCSR.BIT.ADST == 1);
 
 		S12AD.ADCSR.BIT.ADST = 0;
 	}
 
-	float ADC::BatteryVoltage() {
-		unsigned int addata = 0;
+	float ADC::GetBatteryVoltage() {
+		uint16_t addata = 0;
 		ADC::ChSelect(0x01);
 		ADC::StartConvert();
 
 		addata = S12AD.ADDR0;
 
 		return (((float)addata * 3.3) / (4095.0 * 0.6500));
+	}
+
+	void ADC::SetSensorValue() {
+		uint16_t sensor_on[7], sensor_off[7];
+
+		// Phase 1
+		SENSOR_LED_LS = 1;
+		SENSOR_LED_LC = 0;
+		SENSOR_LED_LF = 0;
+		SENSOR_LED_F = 0;
+		SENSOR_LED_RF = 1;
+		SENSOR_LED_RC = 0;
+		SENSOR_LED_RS = 0;
+		ADC::ChSelect(ADC_WALLSENSOR_P1);
+		for (volatile uint16_t cnt = 0; cnt < SENSOR_LED_WAIT; cnt++);
+		ADC::StartConvert();
+
+		sensor_on[0]	= ADDR_SENSOR0;
+		sensor_off[2]	= ADDR_SENSOR2;
+		sensor_on[4]	= ADDR_SENSOR4;
+		sensor_off[6]	= ADDR_SENSOR6;
+
+		// Phase 2
+		SENSOR_LED_LS = 0;
+		SENSOR_LED_LC = 1;
+		SENSOR_LED_LF = 0;
+		SENSOR_LED_F = 0;
+		SENSOR_LED_RF = 0;
+		SENSOR_LED_RC = 1;
+		SENSOR_LED_RS = 0;
+		ADC::ChSelect(ADC_WALLSENSOR_P2);
+		for (volatile uint16_t cnt = 0; cnt < SENSOR_LED_WAIT; cnt++);
+		ADC::StartConvert();
+
+		sensor_on[1]	= ADDR_SENSOR1;
+		sensor_off[3]	= ADDR_SENSOR3;
+		sensor_on[5]	= ADDR_SENSOR5;
+
+		// Phase 3
+		SENSOR_LED_LS = 0;
+		SENSOR_LED_LC = 0;
+		SENSOR_LED_LF = 1;
+		SENSOR_LED_F = 0;
+		SENSOR_LED_RF = 0;
+		SENSOR_LED_RC = 0;
+		SENSOR_LED_RS = 1;
+		ADC::ChSelect(ADC_WALLSENSOR_P1);
+		for (volatile uint16_t cnt = 0; cnt < SENSOR_LED_WAIT; cnt++);
+		ADC::StartConvert();
+
+		sensor_off[0]	= ADDR_SENSOR0;
+		sensor_on[2]	= ADDR_SENSOR2;
+		sensor_off[4]	= ADDR_SENSOR4;
+		sensor_on[6]	= ADDR_SENSOR6;
+
+		// Phase 4
+		SENSOR_LED_LS = 0;
+		SENSOR_LED_LC = 0;
+		SENSOR_LED_LF = 0;
+		SENSOR_LED_F = 1;
+		SENSOR_LED_RF = 0;
+		SENSOR_LED_RC = 0;
+		SENSOR_LED_RS = 0;
+		ADC::ChSelect(ADC_WALLSENSOR_P2);
+		for (volatile uint16_t cnt = 0; cnt < SENSOR_LED_WAIT; cnt++);
+		ADC::StartConvert();
+
+		sensor_off[1]	= ADDR_SENSOR1;
+		sensor_on[3]	= ADDR_SENSOR3;
+		sensor_off[5]	= ADDR_SENSOR5;
+
+		SENSOR_LED_LS = 0;
+		SENSOR_LED_LC = 0;
+		SENSOR_LED_LF = 0;
+		SENSOR_LED_F = 0;
+		SENSOR_LED_RF = 0;
+		SENSOR_LED_RC = 0;
+		SENSOR_LED_RS = 0;
+
+		Status::Sensor::SetValue(sensor_on, sensor_off);
 	}
 
 // CMTimer
@@ -237,6 +341,8 @@ namespace System {
 	}
 
 	void Timer::Switch(unsigned char ch, unsigned char enable) {
+		log_cnt = 0;
+
 		switch(ch) {
 			case 0:
 				CMT.CMSTR0.BIT.STR0 = enable;
@@ -274,57 +380,31 @@ namespace System {
 	}
 
 	void Timer::CH0() {
-//		static volatile unsigned int cnt = 0, log_cnt = 0;
-//
 		wait_add();
-//		Mystat::Status::CheckMouseVelocity();
-//
-//		if (Mystat::Status::CheckExecuteFlag()) {
-//			ADC::Sensor::SetValue(Mystat::Status::GetTravelDir());
-//			Mystat::Status::UpdateStatusValue();
-//			Mystat::Status::DetectWallEdge();
-//			PWM::Motor::SetDuty();
-//			PWM::Fan::SetDuty();
-//
-//			if (RECORD_LOG && (log_cnt < (LOG_SIZE - 1))) {
-//				log_actual1[log_cnt] = Mystat::Status::GetAVelocity();
-//				log_target1[log_cnt] = Mystat::Status::GetActualAVelocity();
-////				log_actual2[log_cnt] = ADC::Sensor::GetValue(ADC::Sensor::RS);
-////				log_target2[log_cnt] = ADC::Sensor::GetValue(ADC::Sensor::LS);
-//				log_cnt++;
-//			} else {
-//				log_cnt = 0;
-//				RECORD_LOG = false;
-//			}
-//
-			timer++;
-//		} else {
-//			Mystat::Status::SetBatteryVoltage();
-//
-//			if (Interface::Switch::GetWaitingFlag()) {
-//				if ((ADC::Sensor::GetValue(ADC::Sensor::LF) > WALL_THRESHOLD_F_LF) && (ADC::Sensor::GetValue(ADC::Sensor::RF) > WALL_THRESHOLD_F_RF)) {
-//					Interface::LED::SetColor(Interface::LED::Blue, Interface::LED::Right);
-//					cnt++;
-//
-//					if (cnt > 2000) {
-//						cnt = 0;
-//						Interface::Switch::SetWaitingFlag(false);
-//					}
-//				} else {
-//					Interface::LED::SetColor(Interface::LED::Red, Interface::LED::Right);
-//					cnt = 0;
-//				}
-//
-//				ADC::Sensor::SetValue(false);
-//			} else {
-//				cnt = 0;
-//
-//				for (volatile unsigned int i = 0; i < 1000; i++);
-//			}
-//
-//			PWM::Fan::SetDuty();
-//			timer = 0;
-//		}
+		ADC::SetSensorValue();
+
+		if (ExecuteFlag.GetValue()) {
+			Interface::SetEncoderValue();
+			Status::Calc::RenewActualVelocity(false);
+			Status::Calc::RenewTargetVelocity(false);
+			Status::Calc::RenewVelocityDiff(false);
+			Status::Calc::RenewAccelTarget(false);
+			Status::Calc::RenewDegree(false);
+			Status::Calc::RenewDistance(false);
+			PWM::Motor::SetDuty();
+
+			if ((log_cnt < LOGSIZE) && (TPUA.TSTR.BIT.CST1 == 1) && (TPUA.TSTR.BIT.CST2 == 1)) {
+				logdata1[log_cnt] = A_Velocity.GetValue(false);
+				logdata2[log_cnt] = A_Velocity.GetValue(true);
+				logdata3[log_cnt] = A_VelocityDiff.GetValue();
+
+				log_cnt++;
+			}
+
+			timer++;	// ウルトラマン
+		} else {
+			//Interface::StartWithFrontSensor();
+		}
 	}
 
 	void Timer::CH1() {
@@ -530,6 +610,11 @@ namespace System {
 		SCI1.TDR = senddata;
 	}
 
+// Interface
+	int8_t Interface::mode = 1;
+	bool Interface::waiting = true;
+	int16_t Interface::encoder_r = 0, Interface::encoder_l = 0, Interface::sensor_cnt = 0;
+
 	void Interface::InitLED() {
 		// CS_Run Enable
 		System::RSPI::WriteData(System::RSPI::LED, RSPI_ADDRESS_LED_CONFIG, RSPI_DATA_LED_ENABLECS);
@@ -538,6 +623,29 @@ namespace System {
 		RSPI_CS_LED = 0;
 		System::Timer::wait_ms(20);
 		RSPI_CS_LED = 1;
+	}
+
+	void Interface::InitEncoder() {
+		SYSTEM.PRCR.WORD = 0xA502;
+		MSTP(TPU0) = 0;
+		SYSTEM.PRCR.WORD = 0xA500;
+
+		TPUA.TSTR.BIT.CST1 = 0;
+		TPUA.TSTR.BIT.CST2 = 0;
+		TPU1.TMDR.BIT.MD = 4;
+		TPU2.TMDR.BIT.MD = 4;
+		TPU1.TCNT = ENCODER_INIT_VAL;
+		TPU2.TCNT = ENCODER_INIT_VAL;
+	}
+
+	void Interface::Encoder_Enable() {
+		TPUA.TSTR.BIT.CST1 = 1;
+		TPUA.TSTR.BIT.CST2 = 1;
+	}
+
+	void Interface::Encoder_Disable() {
+		TPUA.TSTR.BIT.CST1 = 0;
+		TPUA.TSTR.BIT.CST2 = 0;
 	}
 
 	void Interface::SetLEDColor(uint8_t id, uint8_t red, uint8_t green, uint8_t blue) {
@@ -572,261 +680,130 @@ namespace System {
 		}
 	}
 
-/*
-	void Check::StartUp() {
-		char senddata[128];
-		unsigned char address = 0;
-		bool debug = true, operation = true;
-		float batt_voltage = 0.0;
+	void Interface::SetEncoderValue() {
+		if ((TPUA.TSTR.BIT.CST1 == 1) && (TPUA.TSTR.BIT.CST2 == 1)) {
+			encoder_l = ENCODER_INIT_VAL - TPU1.TCNT;
+			encoder_r = TPU2.TCNT - ENCODER_INIT_VAL;
 
-		Interrupt::CMTimer::Switch(0, Interrupt::CMTimer::Status::Disable);
-
-		sprintf(senddata, "\n*** StartUp Check ***\n\n");
-		Comm::SCI::SendChar(senddata);
-		memset(senddata, 0, 128);
-
-		batt_voltage = ADC::Get::BatteryVoltage();
-		sprintf(senddata, "Battery:\t\t%f [V]\n", batt_voltage);
-		Comm::SCI::SendChar(senddata);
-		memset(senddata, 0, 128);
-
-		if (batt_voltage < BATT_VOLTAGE_ERROR) {
-			sprintf(senddata, "!! Low Battery Voltage !!\n");
-			Comm::SCI::SendChar(senddata);
-
-			while (1) {
-				Interrupt::CMTimer::Switch(0, Interrupt::CMTimer::Status::Enable);
-
-				Interface::LED::SetColor(Interface::LED::LED_Color::Red, Interface::LED::Side::Both);
-				Interrupt::CMTimer::wait_ms(500);
-				Interface::LED::SetColor(Interface::LED::LED_Color::None, Interface::LED::Side::Both);
-				Interrupt::CMTimer::wait_ms(500);
-			}
-		} else if (batt_voltage < BATT_VOLTAGE_WARNING) {
-			Interface::LED::SetColor(Interface::LED::LED_Color::Yellow, Interface::LED::Side::Left);
-		} else {
-			Interface::LED::SetColor(Interface::LED::LED_Color::Green, Interface::LED::Side::Left);
+			TPU1.TCNT = ENCODER_INIT_VAL;
+			TPU2.TCNT = ENCODER_INIT_VAL;
 		}
-
-		address = Comm::RSPI::ReadData(ADDRESS_WHO_AM_I);
-
-		sprintf(senddata, "Gyro Device ID:\t\t%d\n", address);
-		Comm::SCI::SendChar(senddata);
-		memset(senddata, 0, 128);
-
-		if (address != DATA_WHO_AM_I) {
-			sprintf(senddata, "!! Gyro Communicate Error !!\n");
-			Comm::SCI::SendChar(senddata);
-
-			while (1) {
-				Interrupt::CMTimer::Switch(0, Interrupt::CMTimer::Status::Enable);
-
-				Interface::LED::SetColor(Interface::LED::LED_Color::Yellow, Interface::LED::Side::Both);
-				Interrupt::CMTimer::wait_ms(500);
-				Interface::LED::SetColor(Interface::LED::LED_Color::None, Interface::LED::Side::Both);
-				Interrupt::CMTimer::wait_ms(500);
-			}
-		}
-
-		sprintf(SCI_SendChar, "Gyro PWR_MGMT1:\t\t%d", Comm::RSPI::ReadData(ADDRESS_PWR_MGMT1));
-		Comm::SCI::SendChar(SCI_SendChar);
-
-		Comm::RSPI::WriteData(ADDRESS_PWR_MGMT1, DATA_PWR_MGMT1);
-		Comm::RSPI::WriteData(ADDRESS_PWR_MGMT2, DATA_PWR_MGMT2);
-		Comm::RSPI::WriteData(ADDRESS_USER_CTRL, DATA_USER_CTRL);
-		Comm::RSPI::WriteData(ADDRESS_SIGNAL_PATH_RESET, DATA_SIGNAL_PATH_RESET);
-		Comm::RSPI::WriteData(ADDRESS_CONFIG, DATA_CONFIG);
-		Comm::RSPI::WriteData(ADDRESS_GYRO_CONFIG, DATA_GYRO_CONFIG);
-
-		sprintf(SCI_SendChar, " => %d\n", Comm::RSPI::ReadData(ADDRESS_PWR_MGMT1));
-		Comm::SCI::SendChar(SCI_SendChar);
-
-		sprintf(SCI_SendChar, "Gyro PWR_MGMT2:\t\t%d\n", Comm::RSPI::ReadData(ADDRESS_PWR_MGMT2));
-		Comm::SCI::SendChar(SCI_SendChar);
-
-		sprintf(SCI_SendChar, "Gyro Config:\t\t%d\n", Comm::RSPI::ReadData(ADDRESS_GYRO_CONFIG));
-		Comm::SCI::SendChar(SCI_SendChar);
-
-		Comm::RSPI::Init_HighSpeedRead();
-
-		// Start X, Y
-		sprintf(SCI_SendChar, "Start:\t\t\t%d, %d\n", START_X, START_Y);
-		Comm::SCI::SendChar();
-
-		// Goal X, Y
-		sprintf(SCI_SendChar, "Goal:\t\t\t%d, %d", GOAL_X, GOAL_Y);
-		Comm::SCI::SendChar();
-
-		// FullSizeGoal Enable?
-		if (ENABLE_FULLGOAL) {
-			sprintf(SCI_SendChar, " [FullSize Section]\n", GOAL_X, GOAL_Y);
-		} else {
-			sprintf(SCI_SendChar, " [Single Section]\n", GOAL_X, GOAL_Y);
-		}
-
-		Comm::SCI::SendChar();
-
-		// CtrlTarget
-		sprintf(SCI_SendChar, "CtrlTarget:\t\t%d, %d / %d, %d\n", WALL_CTRL_TARGET_F_LS, WALL_CTRL_TARGET_F_RS, WALL_CTRL_TARGET_R_LS, WALL_CTRL_TARGET_R_RS);
-		Comm::SCI::SendChar();
-
-		// CtrlThreshold
-		sprintf(SCI_SendChar, "CtrlThreshold:\t\t%d, %d / %d, %d\n", WALL_CTRL_THRESHOLD_F_LS, WALL_CTRL_THRESHOLD_F_RS, WALL_CTRL_THRESHOLD_R_LS, WALL_CTRL_THRESHOLD_R_RS);
-		Comm::SCI::SendChar();
-
-		// WallThreshold
-		sprintf(SCI_SendChar, "WallThreshold:\t\t%d, %d, %d, %d / %d, %d, %d, %d\n", WALL_THRESHOLD_F_LS, WALL_THRESHOLD_F_LF, WALL_THRESHOLD_F_RF, WALL_THRESHOLD_F_RS, WALL_THRESHOLD_R_LS, WALL_THRESHOLD_R_LF, WALL_THRESHOLD_R_RF, WALL_THRESHOLD_R_RS);
-		Comm::SCI::SendChar();
-
-		// WalloffThreshold
-		sprintf(SCI_SendChar, "EdgeDetectThreshold:\t%d, %d / %d, %d\n", WALL_EDGE_THRESHOLD_F_LS, WALL_EDGE_THRESHOLD_F_RS, WALL_EDGE_THRESHOLD_R_LS, WALL_EDGE_THRESHOLD_R_RS);
-		Comm::SCI::SendChar();
-
-		// Map
-		if (R_FlashDataAreaBlankCheck(BLOCK_DB0, BLANK_CHECK_ENTIRE_BLOCK) == FLASH_NOT_BLANK) {
-			operation = Flash::ReadWallData();
-			Mystat::Map::CalcStep(GOAL_X, GOAL_Y, false);
-
-			sprintf(SCI_SendChar, "MapInfoOnFlash:\t\tYes\n");
-			Comm::SCI::SendChar();
-		} else {
-			Mystat::Map::Init();
-
-			sprintf(SCI_SendChar, "MapInfoOnFlash:\t\tNo\n");
-			Comm::SCI::SendChar();
-		}
-
-		// InfoOutput End
-		sprintf(SCI_SendChar, "\n");
-		Comm::SCI::SendChar();
-
-		// If CheckMode == 1
-		// Sensor Data Loop
-		if (SW_NEXT == 0) {
-			Interface::LED::SetColor(Interface::LED::Purple, Interface::LED::Both);
-			Interrupt::CMTimer::Switch(0, Interrupt::CMTimer::Status::Enable);
-			Interrupt::CMTimer::wait_ms(2000);
-			Interface::LED::SetColor(Interface::LED::None, Interface::LED::Both);
-
-			while (debug) {
-				Mystat::Status::SetExecuteFlag(false);
-				Interface::Switch::SetWaitingFlag(true);
-				Interface::Switch::SelectMode();
-				Interface::LED::SetColor(Interface::LED::None, Interface::LED::Both);
-
-				switch (Interface::Switch::GetExecuteMode()) {
-					case 1:
-					// GyroReference
-					Comm::RSPI::SetGyroReference();
-					sprintf(senddata, "Gyro Reference:\t\t%f\n", Comm::RSPI::GetGyroReference());
-					Comm::SCI::SendChar(senddata);
-					memset(senddata, 0, 128);
-
-					while(1) {
-						ADC::Sensor::SetValue(false);
-						sprintf(senddata, "[Front]%d, %d, %d, %d\t\t", ADC::Sensor::GetValue(ADC::Sensor::SensorNum::LS), ADC::Sensor::GetValue(ADC::Sensor::SensorNum::LF), ADC::Sensor::GetValue(ADC::Sensor::SensorNum::RF), ADC::Sensor::GetValue(ADC::Sensor::SensorNum::RS));
-						Comm::SCI::SendChar(senddata);
-						memset(senddata, 0, 128);
-
-						ADC::Sensor::SetValue(true);
-						sprintf(senddata, "[Rear]%d, %d, %d, %d\t", ADC::Sensor::GetValue(ADC::Sensor::SensorNum::LS), ADC::Sensor::GetValue(ADC::Sensor::SensorNum::LF), ADC::Sensor::GetValue(ADC::Sensor::SensorNum::RF), ADC::Sensor::GetValue(ADC::Sensor::SensorNum::RS));
-						Comm::SCI::SendChar(senddata);
-						memset(senddata, 0, 128);
-
-						sprintf(SCI_SendChar, " / Gyro: %f\n", Comm::RSPI::GetAngulerVelocity());
-						Comm::SCI::SendChar(SCI_SendChar);
-
-						Interrupt::CMTimer::wait_ms(100);
-
-						if (SW_PREV == 0) {
-							debug = false;
-							break;
-						}
-					}
-
-					break;
-
-					case 2:
-						Mystat::Map::SendData();
-						break;
-
-					case 3:
-						if (Flash::EraseBlock(BLOCK_DB0)) {
-							Mystat::Map::Init();
-							Interface::LED::SetColor(Interface::LED::Green, Interface::LED::Both);
-						} else {
-							Interface::LED::SetColor(Interface::LED::Red, Interface::LED::Both);
-						}
-
-						Interrupt::CMTimer::wait_ms(1000);
-						Interface::LED::SetColor(Interface::LED::None, Interface::LED::Both);
-						break;
-
-					default:
-						debug = false;
-						break;
-				}
-
-				Interrupt::CMTimer::wait_ms(1000);
-			}
-		}
-
-		Interrupt::CMTimer::Switch(0, Interrupt::CMTimer::Status::Enable);
 	}
 
-	void Etc::StartAction() {
-		unsigned char led = 0;
-		unsigned int melody_num = ((ADC::Sensor::GetValue(ADC::Sensor::LS) + ADC::Sensor::GetValue(ADC::Sensor::LF) + ADC::Sensor::GetValue(ADC::Sensor::RF) + ADC::Sensor::GetValue(ADC::Sensor::RS)) % 7);
+	int16_t Interface::GetEncoderValue(uint8_t side) {
+		int16_t enc_value = 0;
 
-		if (Interface::Switch::GetExecuteMode() == MODE_NUMBER) {
-			PWM::Buzzer::Melody_TE32_1();
-		} else {
-			switch (melody_num) {
+		switch (side) {
+			case Interface::Left:
+				enc_value = encoder_l;
+				break;
+
+			case Interface::Right:
+				enc_value = encoder_r;
+				break;
+		}
+
+		return enc_value;
+	}
+
+	void Interface::ModeSelect() {
+		volatile uint8_t cnt = 0;
+		bool locked = true, add = false;
+
+		//Interface::SetLEDColor(0, 255, 0, 0);
+
+		while (waiting) {
+			if ((SW_NEXT == 0) && locked) {
+				cnt++;
+
+				if (cnt > 50) {
+					while(SW_NEXT == 0);
+					locked = false;
+					add = true;
+					cnt = 0;
+				}
+			} else if ((SW_PREV == 0) && locked) {
+				cnt++;
+
+				if (cnt > 50) {
+					while(SW_PREV == 0);
+					locked = false;
+					add = false;
+					cnt = 0;
+				}
+			} else {
+				cnt = 0;
+			}
+
+			if (!locked) {
+				if (add) {
+					mode++;
+					locked = true;
+					add = false;
+
+					PWM::Buzzer::Enable();
+					PWM::Buzzer::SetDuty(1000.0);
+					Timer::wait_ms(100);
+					PWM::Buzzer::Disable();
+				} else {
+					mode--;
+					locked = true;
+
+					PWM::Buzzer::Enable();
+					PWM::Buzzer::SetDuty(750.0);
+					Timer::wait_ms(100);
+					PWM::Buzzer::Disable();
+				}
+
+				if (mode < 1) {
+					mode = MODE_NUMBER;
+				} else if (mode > MODE_NUMBER) {
+					mode = 1;
+				}
+
+				//Interface::SetLEDColor(0, 255, 0, 0);
+			}
+
+			switch (mode) {
 				case 0:
-					PWM::Buzzer::Melody_TE3_1();
+					Interface::SetLEDColor(0, 255, 0, 0);
 					break;
 
 				case 1:
-					PWM::Buzzer::Melody_GK8_1();
-					break;
-
-				case 2:
-					PWM::Buzzer::Melody_TE16_1();
-					break;
-
-				case 3:
-					PWM::Buzzer::Melody_Shibuya_Otogi();
-					break;
-
-				case 4:
-					PWM::Buzzer::Melody_TE26_1();
-					break;
-
-				case 5:
-					PWM::Buzzer::Melody_TE10_1();
-					break;
-
-				case 6:
-					PWM::Buzzer::Melody_Namiki();
+					Interface::SetLEDColor(0, 0, 255, 0);
 					break;
 
 				default:
+					Interface::SetLEDColor(0, 0, 0, 255);
 					break;
 			}
 		}
 
-//		led = Interface::LED::GetColor(Interface::LED::Left);
-//		Interface::LED::SetColor(Interface::LED::None, Interface::LED::Right);
-//
-//		for (unsigned char cnt = 0; cnt < 2; cnt++) {
-//			Interface::LED::SetColor(Interface::LED::None, Interface::LED::Left);
-//			Interrupt::CMTimer::wait_ms(250);
-//
-//			Interface::LED::SetColor(led, Interface::LED::Left);
-//			Interrupt::CMTimer::wait_ms(250);
-//		}
+		PWM::Buzzer::Enable();
+		PWM::Buzzer::SetDuty(1000.0);
+		Timer::wait_ms(1000);
+		PWM::Buzzer::Disable();
+
+		waiting = true;
 	}
-	*/
+
+	void Interface::StartWithFrontSensor() {
+		if (ExecuteFlag.GetValue()) {
+			return;
+		}
+
+		if (Status::Sensor::CheckWallExist(SIDE_FORWARD) > SENSOR_WALL_EXIST_F) {
+			sensor_cnt++;
+			Interface::SetLEDColor(1, 0, 255, 0);
+		} else {
+			sensor_cnt = 0;
+			Interface::SetLEDColor(1, 255, 0, 0);
+		}
+
+		if (sensor_cnt > WAITING_SENSORSTART) {
+			waiting = false;
+		}
+	}
 }
 
 void Timer_CMT0() {

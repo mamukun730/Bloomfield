@@ -395,12 +395,12 @@ void INT_Excep_TPU10_TGI10B(void){ }
 
 /* MTU4 TGIA4*/
 void INT_Excep_MTU4_TGIA4(void){
-	Timer_MTU4A();
+//	Timer_MTU4A();
 }
 
 /* MTU4 TGIB4*/
 void INT_Excep_MTU4_TGIB4(void){
-	Timer_MTU4B();
+//	Timer_MTU4B();
 }
 
 /* MTU4 TGIC4*/
@@ -408,7 +408,7 @@ void INT_Excep_MTU4_TGIC4(void){ }
 
 /* MTU4 TGID4*/
 void INT_Excep_MTU4_TGID4(void){
-	Timer_MTU4D();
+//	Timer_MTU4D();
 }
 
 /* MTU4 TCIV4*/

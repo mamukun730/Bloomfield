@@ -25,13 +25,32 @@ extern "C" void Timer_CMT0();
 extern "C" void Timer_CMT1();
 #endif
 
-#define RSPI_CS_GYRO PORTC.PODR.BIT.B4
-#define RSPI_CS_LED PORT2.PODR.BIT.B7
+#define RSPI_CS_GYRO	PORTC.PODR.BIT.B4
+#define RSPI_CS_LED		PORT2.PODR.BIT.B7
+#define SW_PREV			PORTA.PIDR.BIT.B0
+#define SW_NEXT			PORTA.PIDR.BIT.B1
+
+#define SENSOR_LED_LS	PORTE.PODR.BIT.B2	// LED0
+#define SENSOR_LED_LC	PORTE.PODR.BIT.B3	// LED1
+#define SENSOR_LED_LF	PORTE.PODR.BIT.B4	// LED2
+#define SENSOR_LED_F	PORTA.PODR.BIT.B3	// LED3
+#define SENSOR_LED_RF	PORTA.PODR.BIT.B4	// LED4
+#define SENSOR_LED_RC	PORTA.PODR.BIT.B6	// LED5
+#define SENSOR_LED_RS	PORTB.PODR.BIT.B0	// LED6
+
+#define ADDR_SENSOR0	S12AD.ADDR1
+#define ADDR_SENSOR1	S12AD.ADDR2
+#define ADDR_SENSOR2	S12AD.ADDR3
+#define ADDR_SENSOR3	S12AD.ADDR4
+#define ADDR_SENSOR4	S12AD.ADDR6
+#define ADDR_SENSOR5	S12AD.ADDR8
+#define ADDR_SENSOR6	S12AD.ADDR9
 
 namespace System {
 	class SetUp {
 		public:
 			static void Clock();
+			static void CreateClass();
 			static void IO();
 			static void Functions();
 			static void StartCheck();
@@ -40,17 +59,14 @@ namespace System {
 	class ADC {
 		public:
 			static void Init();
-			static void ChSelect(unsigned int ch);
+			static void ChSelect(uint16_t ch);
 			static void StartConvert();
-			static float BatteryVoltage();
+			static float GetBatteryVoltage();
+			static void SetSensorValue();			// Getは他のとこに作りたい
 	};
 
 	class Timer {
 		public:
-			enum Status {
-				Disable = 0, Enable = 1
-			};
-
 			static void Init();
 			static void Switch(unsigned char ch, unsigned char enable);
 			static void CH0();
@@ -99,9 +115,29 @@ namespace System {
 	};
 
 	class Interface {
+		private:
+			static int8_t mode;
+			static bool waiting;
+			static int16_t encoder_r, encoder_l, sensor_cnt;
+
 		public:
+			enum Encoder_Side {
+				Left, Right
+			};
+
 			static void InitLED();
+			static void InitEncoder();
+
 			static void SetLEDColor(uint8_t id, uint8_t red, uint8_t green, uint8_t blue);
+			static void SetEncoderValue();
+
+			static int16_t GetEncoderValue(uint8_t side);
+
+			static void Encoder_Enable();
+			static void Encoder_Disable();
+
+			static void ModeSelect();
+			static void StartWithFrontSensor();
 	};
 }
 

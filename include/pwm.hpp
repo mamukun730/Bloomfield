@@ -9,13 +9,13 @@
 #define INCLUDE_PWM_HPP_
 
 #ifdef __cplusplus
-extern "C" void Timer_MTU4A();
-extern "C" void Timer_MTU4B();
-extern "C" void Timer_MTU4D();
+//extern "C" void Timer_MTU4A();
+//extern "C" void Timer_MTU4B();
+//extern "C" void Timer_MTU4D();
 #endif
 
-#define MOTOR_CTRL_L PORTB.PODR.BIT.B3
-#define MOTOR_CTRL_R PORTB.PODR.BIT.B1
+#define MOTOR_CTRL_L PORT5.PODR.BIT.B4
+#define MOTOR_CTRL_R PORT3.PODR.BIT.B1
 
 // Hz
 // http://hpcgi3.nifty.com/prismwave/wiki/wiki.cgi?p=%B2%BB%B3%AC%A4%C8%BC%FE%C7%C8%BF%F4
@@ -119,6 +119,28 @@ namespace PWM {
 			static void Melody_ProtectionRadio();
 	};
 
+	class Score {
+		public:
+			void SetInfo(uint8_t tempo, uint8_t beat);
+			void SetNote(uint8_t scale, uint8_t rhythm);
+			void ResetScore();
+			void PlayScore(bool background);
+
+		private:
+			enum Scale {
+				O1_Ra, O1_Ra_Sharp, O1_Si,
+				O2_Do, O2_Do_Sharp, O2_Re, O2_Re_Sharp, O2_Mi, O2_Fa, O2_Fa_Sharp, O2_Sol, O2_Sol_Sharp, O2_Ra, O2_Ra_Sharp, O2_Si,
+				O3_Do, O3_Do_Sharp, O3_Re, O3_Re_Sharp, O3_Mi, O3_Fa, O3_Fa_Sharp, O3_Sol, O3_Sol_Sharp, O3_Ra, O3_Ra_Sharp, O3_Si,
+				O4_Do, O4_Do_Sharp, O4_Re, O4_Re_Sharp, O4_Mi, O4_Fa, O4_Fa_Sharp, O4_Sol, O4_Sol_Sharp, O4_Ra, O4_Ra_Sharp, O4_Si,
+				O5_Do, O5_Do_Sharp, O5_Re, O5_Re_Sharp, O5_Mi, O5_Fa, O5_Fa_Sharp, O5_Sol, O5_Sol_Sharp, O5_Ra, O5_Ra_Sharp, O5_Si,
+				O6_Do, O6_Do_Sharp, O6_Re, O6_Re_Sharp, O6_Mi, O6_Fa,
+			};
+
+			uint8_t tempo, beat, scale[100], rhythm[100], note_num;
+			uint16_t elapsed_time;
+			bool nowplaying;
+	};
+
 	class Motor {
 		public:
 			enum DriveDir {
@@ -131,13 +153,13 @@ namespace PWM {
 			static void SetDriveDir(unsigned char dir);
 			static void SetDuty();
 
-			static void Accel(float velocity, float accel, bool half_block);
-			static void Run(unsigned int block, bool half_block);
-			static void AccelRun (unsigned char section, bool slant, float accel_target, float decel_target, float decel_length, float accel);
-			static void Turning(bool opposite, signed char dir);
+			static void AccelDecel(float velocity, float accel, bool half_block);
+			static void Run(uint8_t block, bool half_block);
+			static void AccelRun (uint8_t section, bool slant, float accel_target, float decel_target, float decel_length, float accel);
+			static void Turning(bool opposite, int8_t dir);
 			static void Return();
-			static void Slalom(unsigned char parameter_num, signed char dir);
-			static void Slalom(signed char dir);
+			static void Slalom(uint8_t parameter_num, int8_t dir);
+			static void Slalom(int8_t dir);
 
 			static void AdjustPosture_Angle();
 
