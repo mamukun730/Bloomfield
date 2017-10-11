@@ -137,6 +137,8 @@ namespace System {
 			static void Encoder_Disable();
 
 			static void ModeSelect();
+			static bool GetWaitingStatus();
+			static void SetWaitingStatus(bool wait);
 			static void StartWithFrontSensor();
 	};
 }

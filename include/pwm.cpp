@@ -9,6 +9,24 @@
 #include "pwm.hpp"
 
 namespace PWM {
+	struct _slalom_param Motor::slalom_param[NUMBER_SLALOM_PARAM + 1] = {
+/*
+			const volatile float angle_velocity;
+			const volatile float angle_accel;
+			const volatile float distance_before;
+			const volatile float distance_after_left;
+			const volatile float distance_after_right;
+			const volatile float turn_angle;
+			const volatile unsigned char clothoid_angle;
+			const volatile unsigned char wall_correction;
+
+			wall_correction:
+			bit	3		2		1		0
+				Sl_IN	Sl_OUT	St_IN	St_OUT
+ */
+			{ 509.2958, 5187.6446,  5.000,  5.657, 5.657,  90.000, 25, 0x03 },		// 000: 90度小, 480mm/s, r=60
+	};
+
 	void Buzzer::Init() {
 		SYSTEM.PRCR.WORD = 0xA502;
 		MSTP(MTU) = 0;
@@ -639,6 +657,91 @@ namespace PWM {
 		Buzzer::Disable();
 	}
 
+	void Buzzer::Melody_FoxMovie() {
+		Buzzer::Enable();
+
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(375);	// 8(dot): (60/120)*(0.5+0.25)*1000=375
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(63);		// 32: (60/120)*(4/32)*1000=62.5
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(63);
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(667);	// 4+8(3): (60/120)*(1+0.5*2/3)*1000=750
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa_Sharp);	// Sol_Flat
+		System::Timer::wait_ms(167);	// 8(3): (60/120)*0.5*(2/3)*1000=750
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(167);
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(375);
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(63);
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(167);
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(167);
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(167);
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(167);
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(167);
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(167);
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(167);
+		Buzzer::SetDuty(O5_Re);
+		System::Timer::wait_ms(167);
+		Buzzer::SetDuty(O5_Re_Sharp);	// Mi_Flat
+		System::Timer::wait_ms(167);
+
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(375);
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(63);
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(63);
+		Buzzer::SetDuty(0.0);
+		System::Timer::wait_ms(1);
+		Buzzer::SetDuty(O5_Fa);
+		System::Timer::wait_ms(667);
+
+		Buzzer::Disable();
+	}
+
 	void Buzzer::Melody_ProtectionRadio() {
 		Buzzer::Enable();
 
@@ -715,27 +818,37 @@ namespace PWM {
 	}
 
 	void Motor::SetDuty() {
-//		static int16_t error_sensor = 0, error_sensor_last = 0;
-		int16_t error_sensor = 0;
 		static float v_last_diff = 0.0, av_last_diff = 0.0;
-		float a_velocity_wall = 0.0, error = 0.0;
+		float a_velocity_wall = 0.0;
 		float v_actual = 0.0, v_target = 0.0;
 		float av_actual = 0.0, av_target = 0.0;
 		float duty_r = 0.0, duty_l = 0.0, torque_r = 0.0, torque_l = 0.0;
 		float ff_r = 0.0, ff_l = 0.0, fb_r = 0.0, fb_l = 0.0, battery_v = 0.0;
-		float g_p_wall = 0.0;
+
+		static uint16_t cnt = 0;
+
+		if (WallPFlag.GetValue()) {
+			a_velocity_wall = -1.0 * GAIN_P_WALL * Status::Calc::WallControlQuantity();
+
+			if (fabsf(a_velocity_wall) < CTRL_WALL_LIMIT) {
+				A_Velocity.SetValue(false, a_velocity_wall);
+			} else {
+				if (a_velocity_wall > 0.0) {
+					A_Velocity.SetValue(false, CTRL_WALL_LIMIT);
+				} else {
+					A_Velocity.SetValue(false, -CTRL_WALL_LIMIT);
+				}
+			}
+
+			//A_VelocityDiff.SetValue(0.0);
+			Degree.SetValue(0.0);
+		}
 
 		v_actual = Velocity.GetValue(true);
 		v_target = Velocity.GetValue(false);
 
 		av_actual = A_Velocity.GetValue(true);
 		av_target = A_Velocity.GetValue(false);
-
-		if (WallPFlag.GetValue()) {
-			error_sensor = Status::Calc::WallControlQuantity();
-			a_velocity_wall = -(GAIN_P_WALL * (float)error_sensor);
-			A_Velocity.SetValue(false, a_velocity_wall);
-		}
 
 		fb_r = (GAIN_P_ENCODER * (v_target - v_actual) + (GAIN_I_ENCODER * VelocityDiff.GetValue()) + (GAIN_D_ENCODER * ((v_target - v_actual) - v_last_diff)));
 		fb_l = (GAIN_P_ENCODER * (v_target - v_actual) + (GAIN_I_ENCODER * VelocityDiff.GetValue()) + (GAIN_D_ENCODER * ((v_target - v_actual) - v_last_diff)));
@@ -847,7 +960,7 @@ namespace PWM {
 		}
 
 		if (TargetVelocity.GetValue() <= 1.0) {
-//			WallPFlag.SetValue(false);
+			WallPFlag.SetValue(false);
 			Status::Reset();
 		}
 
@@ -872,6 +985,84 @@ namespace PWM {
 			Distance.SetValue(0.0);
 		}
 	}
+
+	void Motor::Slalom(int8_t dir) {
+			uint8_t led_dir = 0;
+
+//			if (dir > 0) {
+//				led_dir = Interface::LED::Left;
+//			} else {
+//				led_dir = Interface::LED::Right;
+//			}
+
+			WallPFlag.SetValue(true);
+//			Mystat::Status::EnableWallEdgeDetect(false);
+
+			Distance.SetValue(SECTION_STRAIGHT / 2.0);
+
+			while ((Distance.GetValue() <= ((SECTION_STRAIGHT / 2.0) + slalom_param[0].distance_before)) && ExecuteFlag.GetValue());
+
+			WallPFlag.SetValue(false);
+
+			A_Velocity.SetValue(false, 0.0);
+			A_Accel.SetValue(false, (float)dir * slalom_param[0].angle_accel);
+//			Interface::LED::SetColor(Interface::LED::Purple, led_dir);
+
+			if (dir > 0) {
+				while ((A_Velocity.GetValue(false) <= (float)slalom_param[0].angle_velocity) && ExecuteFlag.GetValue()) {
+					Distance.SetValue(0.0);
+				}
+			} else if (dir < 0) {
+				while ((A_Velocity.GetValue(false) >= -(float)slalom_param[0].angle_velocity) && ExecuteFlag.GetValue()) {
+					Distance.SetValue(0.0);
+				}
+			}
+
+			A_Accel.SetValue(false, 0.0);
+//			Interface::LED::SetColor(Interface::LED::None, led_dir);
+
+			if (dir > 0) {
+				while ((Degree.GetValue() <= (float)(slalom_param[0].turn_angle - slalom_param[0].clothoid_angle)) && ExecuteFlag.GetValue()) {
+					Distance.SetValue(0.0);
+				}
+			} else if (dir < 0) {
+				while ((Degree.GetValue() >= (float)(-slalom_param[0].turn_angle + slalom_param[0].clothoid_angle)) && ExecuteFlag.GetValue()) {
+					Distance.SetValue(0.0);
+				}
+			}
+
+			A_Accel.SetValue(false, -(float)dir * slalom_param[0].angle_accel);
+//			Interface::LED::SetColor(Interface::LED::SBlue, led_dir);
+
+			if (dir > 0) {
+				while ((Degree.GetValue() <= (float)(slalom_param[0].turn_angle)) && (A_Velocity.GetValue(false) > 0.0) && ExecuteFlag.GetValue()) {
+					Distance.SetValue(0.0);
+				}
+			} else if (dir < 0) {
+				while ((Degree.GetValue() >= (float)(-slalom_param[0].turn_angle)) && (A_Velocity.GetValue(false) < 0.0) && ExecuteFlag.GetValue()) {
+					Distance.SetValue(0.0);
+				}
+			}
+
+			Distance.SetValue(0.0);
+			A_Velocity.SetValue(false, 0.0);
+			A_Accel.SetValue(false, 0.0);
+
+//			Interface::LED::SetColor(Interface::LED::Red, led_dir);
+
+			WallPFlag.SetValue(false);
+
+			if (dir > 0) {
+				Distance.SetValue(SECTION_STRAIGHT - slalom_param[0].distance_after_left);
+			} else {
+				Distance.SetValue(SECTION_STRAIGHT - slalom_param[0].distance_after_right);
+			}
+
+			while ((Distance.GetValue() < SECTION_STRAIGHT) && ExecuteFlag.GetValue());
+
+			Distance.SetValue(0.0);
+//			Interface::LED::SetColor(Interface::LED::None, led_dir);
+		}
 
 	void Motor::Turning(bool opposite, int8_t dir) {
 		float accel_distance = ((TURN_ANGLE_SPEED * TURN_ANGLE_SPEED) / (TURN_ANGLE_ACCEL * 2.0));

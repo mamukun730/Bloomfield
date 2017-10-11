@@ -75,21 +75,13 @@ int main(void) {
 	Mystat::Map::Init();
 
 	PWM::Buzzer::Melody_M_Coin();
-	System::Interface::SetLEDColor(0, 0, 255, 0);
-	System::Interface::SetLEDColor(1, 0, 0, 0);
-
-//	System::Interface::ModeSelect();
-
-//	while(1) {
-//		sprintf(senddata, "%4d, %4d, %4d, %4d, %4d, %4d, %4d\n", Status::Sensor::GetValue(Status::Sensor::LS, false), Status::Sensor::GetValue(Status::Sensor::LC, false), Status::Sensor::GetValue(Status::Sensor::LF, false), Status::Sensor::GetValue(Status::Sensor::F, false), Status::Sensor::GetValue(Status::Sensor::RF, false), Status::Sensor::GetValue(Status::Sensor::RC, false), Status::Sensor::GetValue(Status::Sensor::RS, false));
-//		System::SCI::SendChar(senddata);
-//		System::Timer::wait_ms(1000);
-//	}
+//	PWM::Buzzer::Melody_FoxMovie();
 
 	while(1) {
-		while(SW_PREV == 1);
-		System::Interface::SetLEDColor(0, 0, 0, 255);
+		System::Interface::ModeSelect();
+		System::Interface::SetLEDColor(0, 0, 255, 0);
 		PWM::Buzzer::Melody_TE32_1();
+		System::Interface::SetLEDColor(0, 0, 0, 0);
 
 		System::Timer::wait_ms(1000);
 		Mystat::Position::Reset();
@@ -97,88 +89,28 @@ int main(void) {
 		ExecuteFlag.SetValue(false);
 
 		System::Timer::wait_ms(1000);
-
-		while(SW_PREV == 1);
-		Mystat::Map::SendData();
-		System::Timer::wait_ms(1000);
 	}
 
-/*	System::Timer::wait_ms(2000);
-
-	System::Interface::SetLEDColor(0, 0, 255, 0);
-
-	ExecuteFlag.SetValue(true);
-	PWM::Motor::Enable();
-
-	PWM::Motor::Turning(false, SLALOM_LEFT);
-	System::Timer::wait_ms(100);
-
-	PWM::Motor::Disable();
-	ExecuteFlag.SetValue(false);
-
-	System::Interface::SetLEDColor(0, 0, 0, 255);
-	while(SW_NEXT == 1);
-	System::Interface::SetLEDColor(0, 0, 255, 0);
-
-	for (uint16_t cnt = 0; cnt < LOGSIZE; cnt++) {
-		sprintf(senddata, "%f, %f, %f\n", logdata1[cnt], logdata2[cnt], logdata3[cnt]);
-		System::SCI::SendChar(senddata);
-		}
-
-	System::Interface::SetLEDColor(0, 0, 255, 0);*/
-
-/*	System::Timer::wait_ms(2000);
-
-	System::Interface::SetLEDColor(0, 0, 255, 0);
-
-	ExecuteFlag.SetValue(true);
-	PWM::Motor::Enable();
-
-	Accel.SetValue(false, 2000.0F);
-	while(Velocity.GetValue(false) < 240.0F);
-	Velocity.SetValue(false, 240.0F);
-
-	System::Timer::wait_ms(100);
-
-	Accel.SetValue(false, -2000.0F);
-	while(Velocity.GetValue(false) > 0.0F);
-	Velocity.SetValue(false, 0.0F);
-	Accel.SetValue(false, 0.0F);
-	System::Timer::wait_ms(1000);
-
-	PWM::Motor::Disable();
-	ExecuteFlag.SetValue(false);
-
-	System::Interface::SetLEDColor(0, 0, 0, 255);
-	while(SW_NEXT == 1);
-	System::Interface::SetLEDColor(0, 0, 255, 0);
-
-	for (uint16_t cnt = 0; cnt < LOGSIZE; cnt++) {
-		sprintf(senddata, "%f, %f, %f\n", logdata1[cnt], logdata2[cnt], logdata3[cnt]);
-		System::SCI::SendChar(senddata);
-	}
-
-	System::Interface::SetLEDColor(0, 0, 255, 0);*/
-
-/*	System::Timer::wait_ms(2000);
-	System::Interface::SetLEDColor(0, 0, 255, 0);
-
-	ExecuteFlag.SetValue(true);
-
-	System::Timer::wait_ms(1000);
-
-	ExecuteFlag.SetValue(false);
-
-	System::Interface::SetLEDColor(0, 0, 0, 255);
-	while(SW_NEXT == 1);
-	System::Interface::SetLEDColor(0, 0, 255, 0);
-
-	for (uint16_t cnt = 0; cnt < LOGSIZE; cnt++) {
-		sprintf(senddata, "%d, %f\n", cnt, logdata1[cnt]);
-		System::SCI::SendChar(senddata);
-	}
-
-	System::Interface::SetLEDColor(0, 0, 255, 0);*/
+//	while(SW_PREV == 1);
+//	System::Interface::SetLEDColor(0, 0, 0, 255);
+//	System::Timer::wait_ms(2000);
+//	Status::Calc::SetGyroReference();
+//	System::Timer::wait_ms(1000);
+//
+//	ExecuteFlag.SetValue(true);
+//	PWM::Motor::Enable();
+//	PWM::Motor::AccelDecel(240.0, 3000.0, true);
+//	PWM::Motor::Run(7, false);
+//	PWM::Motor::AccelDecel(0.0, -3000.0, true);
+//	PWM::Motor::Disable();
+//	System::Timer::wait_ms(1000);
+//
+//	while(SW_NEXT == 1);
+//	System::Interface::SetLEDColor(0, 0, 255, 0);
+//	for (uint16_t cnt = 0; cnt < LOGSIZE; cnt++) {
+//		sprintf(senddata, "%f, %f, %f\n", logdata1[cnt], logdata2[cnt], logdata3[cnt]);
+//		System::SCI::SendChar(senddata);
+//	}
 
 	return 0;
 }

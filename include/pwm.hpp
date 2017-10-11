@@ -90,6 +90,17 @@ const static float O6_Fa		= 2793.83;
 //const static float O6_Si		= 1975.53;
 
 namespace PWM {
+	struct _slalom_param {
+			const volatile float angle_velocity;
+			const volatile float angle_accel;
+			const volatile float distance_before;
+			const volatile float distance_after_left;
+			const volatile float distance_after_right;
+			const volatile float turn_angle;
+			const volatile unsigned char clothoid_angle;
+			const volatile unsigned char wall_correction;
+	};
+
 	class Buzzer {
 		public:
 			static void Init();
@@ -114,6 +125,8 @@ namespace PWM {
 			static void Melody_Namiki();
 			static void Melody_Shibuya_Otogi();
 
+			static void Melody_FoxMovie();
+
 			static void Melody_OsakaLoop();
 			static void Melody_Oedo_Door();
 			static void Melody_ProtectionRadio();
@@ -121,19 +134,18 @@ namespace PWM {
 
 	class Score {
 		public:
-			void SetInfo(uint8_t tempo, uint8_t beat);
-			void SetNote(uint8_t scale, uint8_t rhythm);
+			void SetScore_TE32_1();
 			void ResetScore();
 			void PlayScore(bool background);
 
 		private:
 			enum Scale {
-				O1_Ra, O1_Ra_Sharp, O1_Si,
-				O2_Do, O2_Do_Sharp, O2_Re, O2_Re_Sharp, O2_Mi, O2_Fa, O2_Fa_Sharp, O2_Sol, O2_Sol_Sharp, O2_Ra, O2_Ra_Sharp, O2_Si,
-				O3_Do, O3_Do_Sharp, O3_Re, O3_Re_Sharp, O3_Mi, O3_Fa, O3_Fa_Sharp, O3_Sol, O3_Sol_Sharp, O3_Ra, O3_Ra_Sharp, O3_Si,
-				O4_Do, O4_Do_Sharp, O4_Re, O4_Re_Sharp, O4_Mi, O4_Fa, O4_Fa_Sharp, O4_Sol, O4_Sol_Sharp, O4_Ra, O4_Ra_Sharp, O4_Si,
-				O5_Do, O5_Do_Sharp, O5_Re, O5_Re_Sharp, O5_Mi, O5_Fa, O5_Fa_Sharp, O5_Sol, O5_Sol_Sharp, O5_Ra, O5_Ra_Sharp, O5_Si,
-				O6_Do, O6_Do_Sharp, O6_Re, O6_Re_Sharp, O6_Mi, O6_Fa,
+				_O1_Ra, _O1_Ra_Sharp, _O1_Si,
+				_O2_Do, _O2_Do_Sharp, _O2_Re, _O2_Re_Sharp, _O2_Mi, _O2_Fa, _O2_Fa_Sharp, _O2_Sol, _O2_Sol_Sharp, _O2_Ra, _O2_Ra_Sharp, _O2_Si,
+				_O3_Do, _O3_Do_Sharp, _O3_Re, _O3_Re_Sharp, _O3_Mi, _O3_Fa, _O3_Fa_Sharp, _O3_Sol, _O3_Sol_Sharp, _O3_Ra, _O3_Ra_Sharp, _O3_Si,
+				_O4_Do, _O4_Do_Sharp, _O4_Re, _O4_Re_Sharp, _O4_Mi, _O4_Fa, _O4_Fa_Sharp, _O4_Sol, _O4_Sol_Sharp, _O4_Ra, _O4_Ra_Sharp, _O4_Si,
+				_O5_Do, _O5_Do_Sharp, _O5_Re, _O5_Re_Sharp, _O5_Mi, _O5_Fa, _O5_Fa_Sharp, _O5_Sol, _O5_Sol_Sharp, _O5_Ra, _O5_Ra_Sharp, _O5_Si,
+				_O6_Do, _O6_Do_Sharp, _O6_Re, _O6_Re_Sharp, _O6_Mi, _O6_Fa,
 			};
 
 			uint8_t tempo, beat, scale[100], rhythm[100], note_num;
@@ -171,7 +183,7 @@ namespace PWM {
 			static void TestSlalom(bool use_fan);
 
 		private:
-			//static struct _slalom_param slalom_param[NUMBER_SLALOM_PARAM + 1];
+			static struct _slalom_param slalom_param[NUMBER_SLALOM_PARAM + 1];
 	};
 }
 

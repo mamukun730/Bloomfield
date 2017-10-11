@@ -180,6 +180,8 @@ namespace System {
 			System::RSPI::WriteData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_SMPRT_DIV, RSPI_DATA_GYRO_SMPRT_DIV);
 			System::RSPI::WriteData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_CONFIG, RSPI_DATA_GYRO_CONFIG);
 			System::RSPI::WriteData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_GYROCONFIG, RSPI_DATA_GYRO_GYROCONFIG);
+			System::RSPI::WriteData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_ACCELCONFIG, RSPI_DATA_GYRO_ACCELCONFIG);
+			System::RSPI::WriteData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_SIGNAL_RESET, RSPI_DATA_GYRO_SIGNAL_RESET);
 
 			sprintf(senddata, "Gyro PWR MGMT1:\t\t0x%2x\n", System::RSPI::ReadData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_PWR_MGMT1));
 			SCI::SendChar(senddata);
@@ -380,6 +382,8 @@ namespace System {
 	}
 
 	void Timer::CH0() {
+		static uint16_t wait_cnt = 0;
+
 		wait_add();
 		ADC::SetSensorValue();
 
@@ -396,19 +400,33 @@ namespace System {
 			if ((log_cnt < LOGSIZE) && (TPUA.TSTR.BIT.CST1 == 1) && (TPUA.TSTR.BIT.CST2 == 1)) {
 				logdata1[log_cnt] = A_Velocity.GetValue(false);
 				logdata2[log_cnt] = A_Velocity.GetValue(true);
-				logdata3[log_cnt] = A_VelocityDiff.GetValue();
+				logdata3[log_cnt] = (float)Status::Calc::WallControlQuantity();
 
 				log_cnt++;
 			}
 
 			timer++;	// ウルトラマン
 		} else {
-			//Interface::StartWithFrontSensor();
+			if (System::Interface::GetWaitingStatus()) {
+				if (Status::Sensor::CheckWallExist(SIDE_FORWARD)) {
+					Interface::SetLEDColor(1, 0, 255, 0);
+					wait_cnt++;
+				} else {
+					Interface::SetLEDColor(1, 255, 0, 0);
+					wait_cnt = 0;
+				}
+
+				if (wait_cnt > 500) {
+					System::Interface::SetWaitingStatus(false);
+					wait_cnt = 0;
+				}
+			} else {
+				wait_cnt = 0;
+			}
 		}
 	}
 
 	void Timer::CH1() {
-//		Interface::LED::CtrlDuty();
 	}
 
 // Flash
@@ -612,7 +630,7 @@ namespace System {
 
 // Interface
 	int8_t Interface::mode = 1;
-	bool Interface::waiting = true;
+	bool Interface::waiting = false;
 	int16_t Interface::encoder_r = 0, Interface::encoder_l = 0, Interface::sensor_cnt = 0;
 
 	void Interface::InitLED() {
@@ -710,58 +728,41 @@ namespace System {
 		volatile uint8_t cnt = 0;
 		bool locked = true, add = false;
 
-		//Interface::SetLEDColor(0, 255, 0, 0);
+		System::Interface::SetLEDColor(0, 0, 0, 255);
+		System::Interface::SetLEDColor(1, 0, 0, 0);
+		waiting = false;
 
-		while (waiting) {
-			if ((SW_NEXT == 0) && locked) {
-				cnt++;
+		while (1) {
+			if (Status::Calc::GyroOutToA_Velocity_Y() > 180.0) {
+				PWM::Buzzer::Enable();
+				PWM::Buzzer::SetDuty(1000.0);
+				System::Timer::wait_ms(100);
+				PWM::Buzzer::Disable();
 
-				if (cnt > 50) {
-					while(SW_NEXT == 0);
-					locked = false;
-					add = true;
-					cnt = 0;
-				}
-			} else if ((SW_PREV == 0) && locked) {
-				cnt++;
-
-				if (cnt > 50) {
-					while(SW_PREV == 0);
-					locked = false;
-					add = false;
-					cnt = 0;
-				}
-			} else {
-				cnt = 0;
+				System::Timer::wait_ms(500);
+				mode++;
 			}
 
-			if (!locked) {
-				if (add) {
-					mode++;
-					locked = true;
-					add = false;
+			if (Status::Calc::GyroOutToA_Velocity_Y() < -180.0) {
+				PWM::Buzzer::Enable();
+				PWM::Buzzer::SetDuty(750.0);
+				System::Timer::wait_ms(100);
+				PWM::Buzzer::Disable();
 
-					PWM::Buzzer::Enable();
-					PWM::Buzzer::SetDuty(1000.0);
-					Timer::wait_ms(100);
-					PWM::Buzzer::Disable();
-				} else {
-					mode--;
-					locked = true;
+				System::Timer::wait_ms(500);
+				mode--;
+			}
 
-					PWM::Buzzer::Enable();
-					PWM::Buzzer::SetDuty(750.0);
-					Timer::wait_ms(100);
-					PWM::Buzzer::Disable();
-				}
+			if (Status::Calc::ZAccelOutToMetric() < (-0.5 * GRAVITY_METRIC)) {
+				break;
+			}
 
-				if (mode < 1) {
-					mode = MODE_NUMBER;
-				} else if (mode > MODE_NUMBER) {
-					mode = 1;
-				}
+			System::Timer::wait_ms(10);
 
-				//Interface::SetLEDColor(0, 255, 0, 0);
+			if (mode < 1) {
+				mode = MODE_NUMBER;
+			} else if (mode > MODE_NUMBER) {
+				mode = 1;
 			}
 
 			switch (mode) {
@@ -779,12 +780,27 @@ namespace System {
 			}
 		}
 
-		PWM::Buzzer::Enable();
-		PWM::Buzzer::SetDuty(1000.0);
-		Timer::wait_ms(1000);
-		PWM::Buzzer::Disable();
-
 		waiting = true;
+
+		while(waiting) {
+			System::Interface::SetLEDColor(0, 0, 0, 255);
+			System::Timer::wait_ms(100);
+			System::Interface::SetLEDColor(0, 0, 0, 0);
+			System::Timer::wait_ms(100);
+		}
+
+		System::Interface::SetLEDColor(0, 0, 0, 0);
+		System::Interface::SetLEDColor(1, 0, 0, 0);
+
+		waiting = false;
+	}
+
+	bool Interface::GetWaitingStatus() {
+		return waiting;
+	}
+
+	void Interface::SetWaitingStatus(bool wait) {
+		waiting = wait;
 	}
 
 	void Interface::StartWithFrontSensor() {
