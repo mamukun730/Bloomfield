@@ -24,7 +24,7 @@ namespace PWM {
 			bit	3		2		1		0
 				Sl_IN	Sl_OUT	St_IN	St_OUT
  */
-			{ 509.2958, 5187.6446,  5.000,  5.657, 5.657,  90.000, 25, 0x03 },		// 000: 90度小, 480mm/s, r=60
+			{ 509.2958, 5187.6446,  8.000,  8.000, 8.000,  90.000, 25, 0x03 },		// 000: 90度小, 240mm/s, r=27
 	};
 
 	void Buzzer::Init() {
@@ -941,12 +941,12 @@ namespace PWM {
 		}
 
 		if (accel < 0.0) {
-//			Mystat::Status::EnableWallEdgeDetect(false);
+			WallEdgeFlag.SetValue(false);
 
 			deceleration_distance = ((velocity * velocity - Velocity.GetValue(false) * Velocity.GetValue(false)) / (2.0 * accel));
 			while ((Distance.GetValue() < (SECTION_STRAIGHT - deceleration_distance)) && ExecuteFlag.GetValue());
 		} else {
-//			Mystat::Status::EnableWallEdgeDetect(true);
+			WallEdgeFlag.SetValue(true);
 		}
 
 		TargetVelocity.SetValue(velocity);
@@ -971,7 +971,7 @@ namespace PWM {
 		volatile uint8_t cnt = 0;
 
 		WallPFlag.SetValue(true);
-//		Mystat::Status::EnableWallEdgeDetect(true);
+		WallEdgeFlag.SetValue(true);
 
 		if (block > 0) {
 			while (cnt < block) {
@@ -996,7 +996,7 @@ namespace PWM {
 //			}
 
 			WallPFlag.SetValue(true);
-//			Mystat::Status::EnableWallEdgeDetect(false);
+			WallEdgeFlag.SetValue(false);
 
 			Distance.SetValue(SECTION_STRAIGHT / 2.0);
 
@@ -1115,6 +1115,63 @@ namespace PWM {
 
 		Status::Reset();
 //		Mystat::Status::AddSectionDistance(-10.0);
+	}
+
+	void Motor::TestDetectEdge(bool slant) {
+		Status::Calc::SetGyroReference();
+		Status::Reset();
+		ExecuteFlag.SetValue(true);
+		PWM::Motor::Enable();
+
+		if (slant) {
+//			PWM::Motor::Accel(720.0, 8000.0, true);
+//			PWM::Motor::Slalom(3, SLALOM_RIGHT);
+//			while(ADC::Sensor::GetValue(ADC::Sensor::LS) < WALL_EDGE_THRESHOLD_F_LS_SL);
+//			while(ADC::Sensor::GetValue(ADC::Sensor::LS) > WALL_EDGE_THRESHOLD2_F_LS_SL);
+//			Interface::LED::SetColor(Interface::LED::Yellow, Interface::LED::Left);
+//			Mystat::Status::SetSectionDistance(false, POSITION_EDGE_DETECT_F_LS_SL);
+//			while(Mystat::Status::GetSectionDistance() < SECTION_SLANT);
+//			Mystat::Status::SetSectionDistance(true, 0.0);
+//
+//			Interface::LED::SetColor(Interface::LED::None, Interface::LED::Left);
+//			PWM::Motor::AccelRun(1, true, 720.0, 0.0, 32.4, 8000.0);
+		} else {
+			PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, true);
+			while(Status::Sensor::GetValue(Status::Sensor::LS, false) < WALL_EDGE_THRESHOLD_F_LS);
+			while(Status::Sensor::GetValue(Status::Sensor::LC, false) > WALL_EDGE_THRESHOLD2_F_LC);
+			Distance.SetValue(POSITION_EDGE_DETECT_F_L);
+			while(Distance.GetValue() < SECTION_STRAIGHT);
+			Distance.SetValue(0.0);
+
+			PWM::Motor::AccelDecel(0.0, -SEARCH_SPEED, true);
+		}
+
+		System::Timer::wait_ms(1000);
+		PWM::Motor::Disable();
+		ExecuteFlag.SetValue(false);
+	}
+
+	void Motor::TestSlalom(bool use_fan) {
+//		RECORD_LOG = true;
+
+		Status::Calc::SetGyroReference();
+		Status::Reset();
+		ExecuteFlag.SetValue(true);
+		PWM::Motor::Enable();
+
+		PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, true);
+		PWM::Motor::Run(2, false);
+
+//		PWM::Motor::Slalom(SLALOM_RIGHT);
+		PWM::Motor::Slalom(SLALOM_LEFT);
+
+		PWM::Motor::AccelDecel(0.0, -SEARCH_SPEED, true);
+
+		System::Timer::wait_ms(1000);
+		PWM::Motor::Disable();
+		ExecuteFlag.SetValue(false);
+
+//		Mystat::Status::SendLogData();
 	}
 }
 

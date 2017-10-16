@@ -137,6 +137,7 @@ namespace System {
 			static void Encoder_Disable();
 
 			static void ModeSelect();
+			static uint8_t GetExecuteMode();
 			static bool GetWaitingStatus();
 			static void SetWaitingStatus(bool wait);
 			static void StartWithFrontSensor();

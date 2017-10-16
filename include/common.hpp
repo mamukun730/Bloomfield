@@ -44,5 +44,6 @@ extern Status::Value2 GyroRef;
 
 extern Status::Flag ExecuteFlag;
 extern Status::Flag WallPFlag;
+extern Status::Flag WallEdgeFlag;
 
 #endif /* INCLUDE_COMMON_HPP_ */

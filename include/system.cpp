@@ -188,6 +188,55 @@ namespace System {
 
 			sprintf(senddata, "Gyro PWR MGMT2:\t\t0x%2x\n", System::RSPI::ReadData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_PWR_MGMT2));
 			SCI::SendChar(senddata);
+
+			// Start X, Y
+			sprintf(senddata, "Start:\t\t\t%d, %d\n", START_X, START_Y);
+			SCI::SendChar(senddata);
+
+			// Goal X, Y
+			sprintf(senddata, "Goal:\t\t\t%d, %d", GOAL_X, GOAL_Y);
+			SCI::SendChar(senddata);
+
+			// FullSizeGoal Enable?
+			if (ENABLE_FULLGOAL) {
+				sprintf(senddata, " [FullSize Section]\n");
+			} else {
+				sprintf(senddata, " [Single Section]\n");
+			}
+
+			SCI::SendChar(senddata);
+
+			// CtrlTarget
+			sprintf(senddata, "CtrlTarget:\t\t%d, %d\n", SENSOR_TARGET_L, SENSOR_TARGET_R);
+			SCI::SendChar(senddata);
+
+			// CtrlThreshold
+			sprintf(senddata, "CtrlThreshold:\t\t%d, %d\n", SENSOR_CTRL_THRESHOLD_L, SENSOR_CTRL_THRESHOLD_R);
+			SCI::SendChar(senddata);
+
+			// WallThreshold
+			sprintf(senddata, "WallThreshold:\t\t%d, %d, %d\n", SENSOR_WALL_EXIST_L, SENSOR_WALL_EXIST_F, SENSOR_WALL_EXIST_R);
+			SCI::SendChar(senddata);
+
+			// WalloffThreshold
+			sprintf(senddata, "EdgeDetectThreshold:\t%d, %d\n", WALL_EDGE_THRESHOLD_F_LS, WALL_EDGE_THRESHOLD_F_RS);
+			SCI::SendChar(senddata);
+
+			// Map
+			if (R_FlashDataAreaBlankCheck(BLOCK_DB0, BLANK_CHECK_ENTIRE_BLOCK) == FLASH_NOT_BLANK) {
+				operation = Flash::ReadWallData();
+				Mystat::Map::CalcStep(GOAL_X, GOAL_Y, false);
+
+				sprintf(senddata, "MapInfoOnFlash:\t\tYes\n");
+				SCI::SendChar(senddata);
+			} else {
+				Mystat::Map::Init();
+
+				sprintf(senddata, "MapInfoOnFlash:\t\tNo\n");
+				SCI::SendChar(senddata);
+			}
+
+			// InfoOutput End
 		}
 
 		sprintf(senddata, "\n");
@@ -395,12 +444,13 @@ namespace System {
 			Status::Calc::RenewAccelTarget(false);
 			Status::Calc::RenewDegree(false);
 			Status::Calc::RenewDistance(false);
+			Status::DetectWallEdge();
 			PWM::Motor::SetDuty();
 
 			if ((log_cnt < LOGSIZE) && (TPUA.TSTR.BIT.CST1 == 1) && (TPUA.TSTR.BIT.CST2 == 1)) {
-				logdata1[log_cnt] = A_Velocity.GetValue(false);
-				logdata2[log_cnt] = A_Velocity.GetValue(true);
-				logdata3[log_cnt] = (float)Status::Calc::WallControlQuantity();
+				logdata1[log_cnt] = Distance.GetValue();
+				logdata2[log_cnt] = (float)Status::Sensor::GetValue(Status::Sensor::LC, false);
+				logdata3[log_cnt] = (float)Status::Sensor::GetValue(Status::Sensor::RC, false);
 
 				log_cnt++;
 			}
@@ -434,7 +484,7 @@ namespace System {
 		R_FlashDataAreaAccess(0xFFFF, 0xFFFF);
 	}
 
-/*	bool Flash::EraseAll() {
+	bool Flash::EraseAll() {
 		uint32_t loop, ret;
 		bool result = true;
 
@@ -503,7 +553,7 @@ namespace System {
 		}
 
 		return result;
-	}*/
+	}
 
 // RSPI
 	void RSPI::Init() {
@@ -739,7 +789,7 @@ namespace System {
 				System::Timer::wait_ms(100);
 				PWM::Buzzer::Disable();
 
-				System::Timer::wait_ms(500);
+				System::Timer::wait_ms(250);
 				mode++;
 			}
 
@@ -749,11 +799,11 @@ namespace System {
 				System::Timer::wait_ms(100);
 				PWM::Buzzer::Disable();
 
-				System::Timer::wait_ms(500);
+				System::Timer::wait_ms(250);
 				mode--;
 			}
 
-			if (Status::Calc::ZAccelOutToMetric() < (-0.5 * GRAVITY_METRIC)) {
+			if ((Status::Calc::ZAccelOutToMetric() < (0.5 * GRAVITY_METRIC)) && (Status::Calc::GyroOutToA_Velocity_Y() < 180.0) && (Status::Calc::GyroOutToA_Velocity_Y() > -180.0)) {
 				break;
 			}
 
@@ -766,16 +816,28 @@ namespace System {
 			}
 
 			switch (mode) {
-				case 0:
+				case 1:
 					Interface::SetLEDColor(0, 255, 0, 0);
 					break;
 
-				case 1:
+				case 2:
 					Interface::SetLEDColor(0, 0, 255, 0);
 					break;
 
-				default:
+				case 3:
 					Interface::SetLEDColor(0, 0, 0, 255);
+					break;
+
+				case 4:
+					Interface::SetLEDColor(0, 255, 255, 0);
+					break;
+
+				case 5:
+					Interface::SetLEDColor(0, 255, 0, 255);
+					break;
+
+				default:
+					Interface::SetLEDColor(0, 0, 0, 0);
 					break;
 			}
 		}
@@ -793,6 +855,10 @@ namespace System {
 		System::Interface::SetLEDColor(1, 0, 0, 0);
 
 		waiting = false;
+	}
+
+	uint8_t Interface::GetExecuteMode() {
+		return mode;
 	}
 
 	bool Interface::GetWaitingStatus() {

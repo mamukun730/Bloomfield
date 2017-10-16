@@ -37,6 +37,7 @@ Status::Value2 GyroRef;
 
 Status::Flag ExecuteFlag;
 Status::Flag WallPFlag;
+Status::Flag WallEdgeFlag;
 
 #ifdef CPPAPP
 //Initialize global constructors
@@ -85,13 +86,46 @@ int main(void) {
 
 		System::Timer::wait_ms(1000);
 		Mystat::Position::Reset();
-		Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, false);
+
+		switch (System::Interface::GetExecuteMode()) {
+			case 1:
+//				PWM::Motor::TestDetectEdge(false);
+				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, false, false);
+				break;
+
+			case 2:
+				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, true, false);
+				break;
+
+			case 3:
+				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, false, true);
+				break;
+
+			case 4:
+				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, true, true);
+				break;
+
+			case 5:
+				if (System::Flash::EraseBlock(BLOCK_DB0)) {
+					Mystat::Map::Init();
+					System::Interface::SetLEDColor(0, 0, 255, 0);
+				} else {
+					System::Interface::SetLEDColor(0, 255, 0, 0);
+				}
+
+			default:
+				break;
+		}
+
 		ExecuteFlag.SetValue(false);
 
 		System::Timer::wait_ms(1000);
+		System::Interface::SetLEDColor(0, 0, 0, 0);
+
+		while(SW_NEXT == 1);
 	}
 
-//	while(SW_PREV == 1);
+//	while(SW_NEXT == 1);
 //	System::Interface::SetLEDColor(0, 0, 0, 255);
 //	System::Timer::wait_ms(2000);
 //	Status::Calc::SetGyroReference();
@@ -100,7 +134,7 @@ int main(void) {
 //	ExecuteFlag.SetValue(true);
 //	PWM::Motor::Enable();
 //	PWM::Motor::AccelDecel(240.0, 3000.0, true);
-//	PWM::Motor::Run(7, false);
+//	PWM::Motor::Run(5, false);
 //	PWM::Motor::AccelDecel(0.0, -3000.0, true);
 //	PWM::Motor::Disable();
 //	System::Timer::wait_ms(1000);
