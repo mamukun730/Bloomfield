@@ -38,6 +38,7 @@ Status::Value2 GyroRef;
 Status::Flag ExecuteFlag;
 Status::Flag WallPFlag;
 Status::Flag WallEdgeFlag;
+Status::Flag GyroCtrlFlag;
 
 #ifdef CPPAPP
 //Initialize global constructors
@@ -89,20 +90,27 @@ int main(void) {
 
 		switch (System::Interface::GetExecuteMode()) {
 			case 1:
-//				PWM::Motor::TestDetectEdge(false);
-				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, false, false);
+				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, true, false);
+
+				if (ExecuteFlag.GetValue()) {
+					Mystat::Map::Search_Adachi(START_X, START_Y, false, true, true);
+				}
 				break;
 
 			case 2:
-				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, true, false);
+				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, true, true);
 				break;
 
 			case 3:
-				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, false, true);
+				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, false, false);
 				break;
 
 			case 4:
-				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, true, true);
+				while(1) {
+					sprintf(senddata, "%4d, %4d, %4d, %4d, %4d, %4d, %4d\n", Status::Sensor::GetValue(Status::Sensor::LS, false), Status::Sensor::GetValue(Status::Sensor::LC, false), Status::Sensor::GetValue(Status::Sensor::LF, false), Status::Sensor::GetValue(Status::Sensor::F, false), Status::Sensor::GetValue(Status::Sensor::RF, false), Status::Sensor::GetValue(Status::Sensor::RC, false), Status::Sensor::GetValue(Status::Sensor::RS, false));
+					System::SCI::SendChar(senddata);
+					System::Timer::wait_ms(1000);
+				}
 				break;
 
 			case 5:

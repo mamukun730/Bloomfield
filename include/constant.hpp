@@ -16,7 +16,8 @@ const static uint32_t CTRL_INTERVAL					= 1000;				// [us]
 const static uint32_t CMT0_INTERVAL					= 1;				// [ms]
 const static uint32_t CMT1_INTERVAL					= 10;				// [us]
 
-const static float BATT_VOLTAGE_ERROR				= 3.80;
+const static float BATT_VOLTAGE_WARNING				= 3.85;
+const static float BATT_VOLTAGE_ERROR				= 3.75;
 const static uint16_t LOGSIZE						= 2000;
 
 // Math
@@ -30,7 +31,7 @@ const static float BODY_WEIGHT						= 0.0196;			// 機体重量 [kg]
 //const static float BODY_MOMENT_INERTIA			= 0.00015319;		// 慣性モーメント [kg/m^2] 0.00005000
 const static float BODY_WIDTH						= 0.0370;			// トレッド幅(機体幅-タイヤ幅) [m]
 const static float GEAR_RATIO						= 1.0000;
-const static float WHEEL_D							= 14.000;			// ホイール径 [mm]
+const static float WHEEL_D							= 14.100;			// ホイール径 [mm]
 const static uint32_t SLIP_RATE						= 16000;			// スリップ定数 [mm/s2]
 
 const static uint8_t MODE_NUMBER					= 5;
@@ -48,6 +49,7 @@ const static float TURN_ANGLE_OPPOSITE				= 180.0;
 
 const static float POSITION_EDGE_DETECT_F_L			= 44.0;
 const static float POSITION_EDGE_DETECT_F_R			= 49.0;
+const static float POSITION_BACKWALL_CORRECTION		= 25.86;
 
 // Maps
 const static uint32_t INF							= 1000000000;
@@ -111,7 +113,7 @@ const static float GAIN_I_ENCODER					= 0.004242424;
 const static float GAIN_D_ENCODER					= 0.130909091;
 
 // Gyro
-const static float GYRO_RESOLUTION					= (1.0 / 16.4);		// deg/s
+const static float GYRO_RESOLUTION					= (1.0 / 16.2);		// deg/s Default:(1/16.4)
 const static uint16_t GYRO_REFERENCE_SAMPLE			= 500;
 const static float GAIN_P_GYRO						= 0.06302453;
 const static float GAIN_I_GYRO						= 0.01289976;
@@ -128,29 +130,35 @@ const static uint16_t ADC_WALLSENSOR_P2				= 0x114;			// 0B 01 0001 0100
 //																		   Ch 98 7654 3210
 
 // Sensor
-const static float GAIN_P_WALL						= 0.100;
+const static float GAIN_P_WALL						= 0.150;
 const static float CTRL_WALL_LIMIT					= 720.0;			// deg/s
 
 const static uint8_t SENSOR_AMOUNT					= 7;
 const static uint8_t SENSOR_LED_WAIT				= 127;
 
-const static uint16_t SENSOR_TARGET_L				= 320;				// 壁制御目標
+const static uint16_t SENSOR_TARGET_L				= 405;				// 壁制御目標
 const static uint16_t SENSOR_TARGET_R				= 420;
 
-const static uint16_t SENSOR_CTRL_THRESHOLD_L		= 240;				// 壁制御閾値
+const static uint16_t SENSOR_CTRL_THRESHOLD_L		= 304;				// 壁制御閾値 0.75Ref
 const static uint16_t SENSOR_CTRL_THRESHOLD_R		= 315;
 
-const static uint16_t SENSOR_DIFF_THRESHOLD			= 25;
+const static uint16_t SENSOR_DIFF_THRESHOLD			= 7;
 
-const static uint16_t SENSOR_WALL_EXIST_L			= 80;				// 壁有無閾値
+const static uint16_t SENSOR_WALL_EXIST_L			= 81;				// 壁有無閾値 0.2Ref
 const static uint16_t SENSOR_WALL_EXIST_F			= 60;
-const static uint16_t SENSOR_WALL_EXIST_R			= 150;
+const static uint16_t SENSOR_WALL_EXIST_R			= 84;
 
-const static uint16_t WALL_EDGE_THRESHOLD_F_LS		= SENSOR_CTRL_THRESHOLD_L;
-const static uint16_t WALL_EDGE_THRESHOLD_F_RS		= SENSOR_CTRL_THRESHOLD_R;
+const static uint16_t WALL_EDGE_THRESHOLD_F_LS		= 203;				// 壁切れ監視閾値 0.5Ref
+const static uint16_t WALL_EDGE_THRESHOLD_F_RS		= 210;
 
-const static uint16_t WALL_EDGE_THRESHOLD2_F_LC		= 10;
-const static uint16_t WALL_EDGE_THRESHOLD2_F_RC		= 90;
+const static uint16_t WALL_EDGE_THRESHOLD2_F_LC		= 40;				// 壁切れ
+const static uint16_t WALL_EDGE_THRESHOLD2_F_RC		= 95;
+
+const static uint16_t WALL_EDGE_THRESHOLD_F_LC		= 35;				// 柱切れ監視閾値
+const static uint16_t WALL_EDGE_THRESHOLD_F_RC		= 110;
+
+const static uint16_t POLE_EDGE_THRESHOLD_F_LC		= 20;				// 柱切れ
+const static uint16_t POLE_EDGE_THRESHOLD_F_RC		= 70;
 
 // RSPI Gyro
 const static uint8_t RSPI_ADDRESS_GYRO_SMPRT_DIV	= 0x19;

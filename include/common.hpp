@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <array>
 
 #include "../iodefine.h"
 #include "flash/r_typedefs.h"
@@ -45,5 +44,6 @@ extern Status::Value2 GyroRef;
 extern Status::Flag ExecuteFlag;
 extern Status::Flag WallPFlag;
 extern Status::Flag WallEdgeFlag;
+extern Status::Flag GyroCtrlFlag;
 
 #endif /* INCLUDE_COMMON_HPP_ */

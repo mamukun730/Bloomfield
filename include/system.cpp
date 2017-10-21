@@ -158,6 +158,12 @@ namespace System {
 				System::Timer::wait_ms(500);
 			}
 		} else {
+			if (batt_voltage < BATT_VOLTAGE_WARNING) {
+				Interface::SetLEDColor(0, 255, 255, 0);
+			} else {
+				Interface::SetLEDColor(0, 0, 255, 0);
+			}
+
 			address = System::RSPI::ReadData(System::RSPI::Gyro, RSPI_ADDRESS_GYRO_DEVICEID);
 
 			sprintf(senddata, "Gyro Device ID:\t\t0x%2x\n", address);
@@ -444,13 +450,14 @@ namespace System {
 			Status::Calc::RenewAccelTarget(false);
 			Status::Calc::RenewDegree(false);
 			Status::Calc::RenewDistance(false);
-			Status::DetectWallEdge();
+ 			Status::DetectWallEdge();
+			Status::CheckMachineVelocity();
 			PWM::Motor::SetDuty();
 
 			if ((log_cnt < LOGSIZE) && (TPUA.TSTR.BIT.CST1 == 1) && (TPUA.TSTR.BIT.CST2 == 1)) {
 				logdata1[log_cnt] = Distance.GetValue();
-				logdata2[log_cnt] = (float)Status::Sensor::GetValue(Status::Sensor::LC, false);
-				logdata3[log_cnt] = (float)Status::Sensor::GetValue(Status::Sensor::RC, false);
+				logdata2[log_cnt] = (float)Status::Sensor::GetValue(Status::Sensor::LS, false);
+				logdata3[log_cnt] = (float)Status::Sensor::GetValue(Status::Sensor::LC, false);
 
 				log_cnt++;
 			}
@@ -843,6 +850,7 @@ namespace System {
 		}
 
 		waiting = true;
+		System::Timer::wait_ms(1);
 
 		while(waiting) {
 			System::Interface::SetLEDColor(0, 0, 0, 255);

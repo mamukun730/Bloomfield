@@ -93,12 +93,13 @@ namespace PWM {
 	struct _slalom_param {
 			const volatile float angle_velocity;
 			const volatile float angle_accel;
-			const volatile float distance_before;
+			const volatile float distance_before_left;
+			const volatile float distance_before_right;
 			const volatile float distance_after_left;
 			const volatile float distance_after_right;
 			const volatile float turn_angle;
-			const volatile unsigned char clothoid_angle;
-			const volatile unsigned char wall_correction;
+			const volatile uint8_t clothoid_angle;
+			const volatile uint8_t wall_correction;
 	};
 
 	class Buzzer {
@@ -169,6 +170,7 @@ namespace PWM {
 			static void Run(uint8_t block, bool half_block);
 			static void AccelRun (uint8_t section, bool slant, float accel_target, float decel_target, float decel_length, float accel);
 			static void Turning(bool opposite, int8_t dir);
+			static void BackAtBlindAllay();
 			static void Return();
 			static void Slalom(uint8_t parameter_num, int8_t dir);
 			static void Slalom(int8_t dir);

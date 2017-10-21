@@ -13,7 +13,8 @@ namespace PWM {
 /*
 			const volatile float angle_velocity;
 			const volatile float angle_accel;
-			const volatile float distance_before;
+			const volatile float distance_before_left;
+			const volatile float distance_before_right;
 			const volatile float distance_after_left;
 			const volatile float distance_after_right;
 			const volatile float turn_angle;
@@ -24,7 +25,7 @@ namespace PWM {
 			bit	3		2		1		0
 				Sl_IN	Sl_OUT	St_IN	St_OUT
  */
-			{ 509.2958, 5187.6446,  8.000,  8.000, 8.000,  90.000, 25, 0x03 },		// 000: 90度小, 240mm/s, r=27
+			{ 509.2958, 5187.6446,  9.000, 9.000, 5.000, 5.000,  90.000, 25, 0x03 },		// 000: 90度小, 240mm/s, r=27
 	};
 
 	void Buzzer::Init() {
@@ -931,6 +932,7 @@ namespace PWM {
 		float deceleration_distance = 0.0;
 
 		WallPFlag.SetValue(true);
+		WallEdgeFlag.SetValue(true);
 
 		if (half_block) {
 //			if ((velocity < 1.0) && Status::Sensor::CheckWallExist(SIDE_FORWARD)) {
@@ -941,12 +943,10 @@ namespace PWM {
 		}
 
 		if (accel < 0.0) {
-			WallEdgeFlag.SetValue(false);
+//			WallEdgeFlag.SetValue(false);
 
 			deceleration_distance = ((velocity * velocity - Velocity.GetValue(false) * Velocity.GetValue(false)) / (2.0 * accel));
 			while ((Distance.GetValue() < (SECTION_STRAIGHT - deceleration_distance)) && ExecuteFlag.GetValue());
-		} else {
-			WallEdgeFlag.SetValue(true);
 		}
 
 		TargetVelocity.SetValue(velocity);
@@ -1000,7 +1000,11 @@ namespace PWM {
 
 			Distance.SetValue(SECTION_STRAIGHT / 2.0);
 
-			while ((Distance.GetValue() <= ((SECTION_STRAIGHT / 2.0) + slalom_param[0].distance_before)) && ExecuteFlag.GetValue());
+			if (dir > 0) {
+				while ((Distance.GetValue() <= ((SECTION_STRAIGHT / 2.0) + slalom_param[0].distance_before_left)) && ExecuteFlag.GetValue());
+			} else {
+				while ((Distance.GetValue() <= ((SECTION_STRAIGHT / 2.0) + slalom_param[0].distance_before_right)) && ExecuteFlag.GetValue());
+			}
 
 			WallPFlag.SetValue(false);
 
@@ -1117,6 +1121,27 @@ namespace PWM {
 //		Mystat::Status::AddSectionDistance(-10.0);
 	}
 
+	void Motor::BackAtBlindAllay() {
+		WallPFlag.SetValue(false);
+
+		TargetVelocity.SetValue(-SEARCH_SPEED / 2.0);
+		Accel.SetValue(false, -SEARCH_ACCEL);
+
+		System::Timer::wait_ms(300);
+		GyroCtrlFlag.SetValue(false);
+		System::Timer::wait_ms(200);
+
+		TargetVelocity.SetValue(0.0);
+		Accel.SetValue(false, SEARCH_ACCEL);
+
+		while(Velocity.GetValue(false) < 0.0);
+
+		Accel.SetValue(false, 0.0);
+
+		Status::Reset();
+		Distance.SetValue(POSITION_BACKWALL_CORRECTION);
+	}
+
 	void Motor::TestDetectEdge(bool slant) {
 		Status::Calc::SetGyroReference();
 		Status::Reset();
@@ -1137,9 +1162,9 @@ namespace PWM {
 //			PWM::Motor::AccelRun(1, true, 720.0, 0.0, 32.4, 8000.0);
 		} else {
 			PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, true);
-			while(Status::Sensor::GetValue(Status::Sensor::LS, false) < WALL_EDGE_THRESHOLD_F_LS);
-			while(Status::Sensor::GetValue(Status::Sensor::LC, false) > WALL_EDGE_THRESHOLD2_F_LC);
-			Distance.SetValue(POSITION_EDGE_DETECT_F_L);
+			while(Status::Sensor::GetValue(Status::Sensor::RS, false) < WALL_EDGE_THRESHOLD_F_RS);
+			while(Status::Sensor::GetValue(Status::Sensor::RC, false) > WALL_EDGE_THRESHOLD2_F_RC);
+			Distance.SetValue(POSITION_EDGE_DETECT_F_R);
 			while(Distance.GetValue() < SECTION_STRAIGHT);
 			Distance.SetValue(0.0);
 
@@ -1160,18 +1185,38 @@ namespace PWM {
 		PWM::Motor::Enable();
 
 		PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, true);
-		PWM::Motor::Run(2, false);
+//		WallEdgeFlag.SetValue(false);
+//		while(Status::Sensor::GetValue(Status::Sensor::RS, false) < WALL_EDGE_THRESHOLD_F_RS);
+//		while(Status::Sensor::GetValue(Status::Sensor::RC, false) > WALL_EDGE_THRESHOLD2_F_RC);
+//		Distance.SetValue(POSITION_EDGE_DETECT_F_R);
+//		while(Distance.GetValue() < SECTION_STRAIGHT);
+//		Distance.SetValue(0.0);
 
 //		PWM::Motor::Slalom(SLALOM_RIGHT);
 		PWM::Motor::Slalom(SLALOM_LEFT);
 
-		PWM::Motor::AccelDecel(0.0, -SEARCH_SPEED, true);
+		PWM::Motor::AccelDecel(0.0, -SEARCH_ACCEL, true);
 
 		System::Timer::wait_ms(1000);
 		PWM::Motor::Disable();
 		ExecuteFlag.SetValue(false);
 
 //		Mystat::Status::SendLogData();
+	}
+
+	void Motor::TestWheelDiameter() {
+		Status::Calc::SetGyroReference();
+		Status::Reset();
+		ExecuteFlag.SetValue(true);
+		PWM::Motor::Enable();
+
+		PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, true);
+		PWM::Motor::Run(7, false);
+		PWM::Motor::AccelDecel(0.0, -SEARCH_ACCEL, true);
+
+		System::Timer::wait_ms(1000);
+		PWM::Motor::Disable();
+		ExecuteFlag.SetValue(false);
 	}
 }
 
