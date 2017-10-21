@@ -130,23 +130,25 @@ const static uint16_t ADC_WALLSENSOR_P2				= 0x114;			// 0B 01 0001 0100
 //																		   Ch 98 7654 3210
 
 // Sensor
-const static float GAIN_P_WALL						= 0.150;
+const static float GAIN_P_WALL						= 0.200;
 const static float CTRL_WALL_LIMIT					= 720.0;			// deg/s
 
 const static uint8_t SENSOR_AMOUNT					= 7;
 const static uint8_t SENSOR_LED_WAIT				= 127;
 
-const static uint16_t SENSOR_TARGET_L				= 405;				// 壁制御目標
-const static uint16_t SENSOR_TARGET_R				= 420;
+const static uint16_t SENSOR_TARGET_L				= 300;				// 壁制御目標
+const static uint16_t SENSOR_TARGET_R				= 370;
 
-const static uint16_t SENSOR_CTRL_THRESHOLD_L		= 304;				// 壁制御閾値 0.75Ref
-const static uint16_t SENSOR_CTRL_THRESHOLD_R		= 315;
+const static uint16_t SENSOR_CTRL_THRESHOLD_L		= 203;				// 壁制御閾値 0.75Ref
+const static uint16_t SENSOR_CTRL_THRESHOLD_R		= 210;
 
 const static uint16_t SENSOR_DIFF_THRESHOLD			= 7;
 
-const static uint16_t SENSOR_WALL_EXIST_L			= 81;				// 壁有無閾値 0.2Ref
+const static uint16_t SENSOR_WALL_EXIST_L			= 15;				// 壁有無閾値 (壁切れセンサ利用)
 const static uint16_t SENSOR_WALL_EXIST_F			= 60;
-const static uint16_t SENSOR_WALL_EXIST_R			= 84;
+const static uint16_t SENSOR_WALL_EXIST_R			= 70;
+
+const static uint16_t SENSOR_WALL_EXIST_F_NEAR		= 200;
 
 const static uint16_t WALL_EDGE_THRESHOLD_F_LS		= 203;				// 壁切れ監視閾値 0.5Ref
 const static uint16_t WALL_EDGE_THRESHOLD_F_RS		= 210;

@@ -79,80 +79,95 @@ int main(void) {
 	PWM::Buzzer::Melody_M_Coin();
 //	PWM::Buzzer::Melody_FoxMovie();
 
-	while(1) {
-		System::Interface::ModeSelect();
-		System::Interface::SetLEDColor(0, 0, 255, 0);
-		PWM::Buzzer::Melody_TE32_1();
-		System::Interface::SetLEDColor(0, 0, 0, 0);
-
-		System::Timer::wait_ms(1000);
-		Mystat::Position::Reset();
-
-		switch (System::Interface::GetExecuteMode()) {
-			case 1:
-				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, true, false);
-
-				if (ExecuteFlag.GetValue()) {
-					Mystat::Map::Search_Adachi(START_X, START_Y, false, true, true);
-				}
-				break;
-
-			case 2:
-				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, true, true);
-				break;
-
-			case 3:
-				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, false, false);
-				break;
-
-			case 4:
-				while(1) {
-					sprintf(senddata, "%4d, %4d, %4d, %4d, %4d, %4d, %4d\n", Status::Sensor::GetValue(Status::Sensor::LS, false), Status::Sensor::GetValue(Status::Sensor::LC, false), Status::Sensor::GetValue(Status::Sensor::LF, false), Status::Sensor::GetValue(Status::Sensor::F, false), Status::Sensor::GetValue(Status::Sensor::RF, false), Status::Sensor::GetValue(Status::Sensor::RC, false), Status::Sensor::GetValue(Status::Sensor::RS, false));
-					System::SCI::SendChar(senddata);
-					System::Timer::wait_ms(1000);
-				}
-				break;
-
-			case 5:
-				if (System::Flash::EraseBlock(BLOCK_DB0)) {
-					Mystat::Map::Init();
-					System::Interface::SetLEDColor(0, 0, 255, 0);
-				} else {
-					System::Interface::SetLEDColor(0, 255, 0, 0);
-				}
-
-			default:
-				break;
-		}
-
-		ExecuteFlag.SetValue(false);
-
-		System::Timer::wait_ms(1000);
-		System::Interface::SetLEDColor(0, 0, 0, 0);
-
-		while(SW_NEXT == 1);
-	}
-
-//	while(SW_NEXT == 1);
-//	System::Interface::SetLEDColor(0, 0, 0, 255);
-//	System::Timer::wait_ms(2000);
-//	Status::Calc::SetGyroReference();
-//	System::Timer::wait_ms(1000);
+//	while(1) {
+//		System::Interface::ModeSelect();
+//		System::Interface::SetLEDColor(0, 0, 255, 0);
+//		PWM::Buzzer::Melody_TE32_1();
+//		System::Interface::SetLEDColor(0, 0, 0, 0);
 //
+//		System::Timer::wait_ms(1000);
+//		Mystat::Position::Reset();
+//
+//		switch (System::Interface::GetExecuteMode()) {
+//			case 1:
+//				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, true, false);
+//
+//				if (ExecuteFlag.GetValue()) {
+//					Mystat::Map::Search_Adachi(START_X, START_Y, false, true, true);
+//				}
+//				break;
+//
+//			case 2:
+//				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, true, true);
+//				break;
+//
+//			case 3:
+//				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, false, false);
+//				break;
+//
+//			case 4:
+//				while(1) {
+//					sprintf(senddata, "%4d, %4d, %4d, %4d, %4d, %4d, %4d\n", Status::Sensor::GetValue(Status::Sensor::LS, false), Status::Sensor::GetValue(Status::Sensor::LC, false), Status::Sensor::GetValue(Status::Sensor::LF, false), Status::Sensor::GetValue(Status::Sensor::F, false), Status::Sensor::GetValue(Status::Sensor::RF, false), Status::Sensor::GetValue(Status::Sensor::RC, false), Status::Sensor::GetValue(Status::Sensor::RS, false));
+//					System::SCI::SendChar(senddata);
+//					System::Timer::wait_ms(1000);
+//				}
+//				break;
+//
+//			case 5:
+//				if (System::Flash::EraseBlock(BLOCK_DB0)) {
+//					Mystat::Map::Init();
+//					System::Interface::SetLEDColor(0, 0, 255, 0);
+//				} else {
+//					System::Interface::SetLEDColor(0, 255, 0, 0);
+//				}
+//
+//			default:
+//				break;
+//		}
+//
+//		ExecuteFlag.SetValue(false);
+//
+//		System::Timer::wait_ms(1000);
+//		System::Interface::SetLEDColor(0, 0, 0, 0);
+//
+//		while(SW_NEXT == 1);
+//	}
+
+	while(SW_NEXT == 1);
+	System::Interface::SetLEDColor(0, 0, 0, 255);
+	System::Timer::wait_ms(2000);
+	Status::Calc::SetGyroReference();
+	System::Timer::wait_ms(1000);
+
+	ExecuteFlag.SetValue(true);
+	PWM::Motor::Enable();
+
+	PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, true);
+	while(((Status::Sensor::GetValue(Status::Sensor::LS, false) > WALL_EDGE_THRESHOLD_F_LS)
+			|| (Status::Sensor::GetValue(Status::Sensor::LC, false) < WALL_EDGE_THRESHOLD_F_LC))
+			&& ExecuteFlag.GetValue());
+	while((Status::Sensor::GetValue(Status::Sensor::LC, false) > POLE_EDGE_THRESHOLD_F_LC)
+			&& ExecuteFlag.GetValue());
+	Distance.SetValue(POSITION_EDGE_DETECT_F_L);
+	while((Distance.GetValue() < SECTION_STRAIGHT)&& ExecuteFlag.GetValue());
+	Distance.SetValue(0.0);
+
+	PWM::Motor::AccelDecel(0.0, -SEARCH_SPEED, true);
+
 //	ExecuteFlag.SetValue(true);
 //	PWM::Motor::Enable();
 //	PWM::Motor::AccelDecel(240.0, 3000.0, true);
 //	PWM::Motor::Run(5, false);
 //	PWM::Motor::AccelDecel(0.0, -3000.0, true);
-//	PWM::Motor::Disable();
-//	System::Timer::wait_ms(1000);
-//
-//	while(SW_NEXT == 1);
-//	System::Interface::SetLEDColor(0, 0, 255, 0);
-//	for (uint16_t cnt = 0; cnt < LOGSIZE; cnt++) {
-//		sprintf(senddata, "%f, %f, %f\n", logdata1[cnt], logdata2[cnt], logdata3[cnt]);
-//		System::SCI::SendChar(senddata);
-//	}
+		PWM::Motor::Disable();
+		System::Timer::wait_ms(1000);
+
+	while(SW_NEXT == 1);
+	System::Interface::SetLEDColor(0, 0, 255, 0);
+	for (uint16_t cnt = 0; cnt < LOGSIZE; cnt++) {
+		sprintf(senddata, "%f, %f, %f\n", logdata1[cnt], logdata2[cnt], logdata3[cnt]);
+		System::SCI::SendChar(senddata);
+	}
 
 	return 0;
 }

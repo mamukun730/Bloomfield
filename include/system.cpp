@@ -160,6 +160,7 @@ namespace System {
 		} else {
 			if (batt_voltage < BATT_VOLTAGE_WARNING) {
 				Interface::SetLEDColor(0, 255, 255, 0);
+				System::Timer::wait_ms(500);
 			} else {
 				Interface::SetLEDColor(0, 0, 255, 0);
 			}
@@ -450,7 +451,7 @@ namespace System {
 			Status::Calc::RenewAccelTarget(false);
 			Status::Calc::RenewDegree(false);
 			Status::Calc::RenewDistance(false);
- 			Status::DetectWallEdge();
+ //			Status::DetectWallEdge();
 			Status::CheckMachineVelocity();
 			PWM::Motor::SetDuty();
 
