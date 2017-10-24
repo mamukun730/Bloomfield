@@ -451,7 +451,7 @@ namespace System {
 			Status::Calc::RenewAccelTarget(false);
 			Status::Calc::RenewDegree(false);
 			Status::Calc::RenewDistance(false);
- //			Status::DetectWallEdge();
+			Status::DetectWallEdge();
 			Status::CheckMachineVelocity();
 			PWM::Motor::SetDuty();
 

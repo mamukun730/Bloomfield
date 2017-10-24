@@ -48,7 +48,7 @@ const void *HardwareVectors[] FVECT_SECT  = {
 //;0xffffff9C  Reserved
     (fp)0,
 //;0xffffffA0  Reserved
-    (fp)0xFFFFFFFF,
+    (fp)0x45FFFFFF,			// ID_CODE
 //;0xffffffA4  Reserved
     (fp)0xFFFFFFFF,
 //;0xffffffA8  Reserved

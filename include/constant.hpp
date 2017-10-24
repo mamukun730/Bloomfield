@@ -35,7 +35,7 @@ const static float WHEEL_D							= 14.100;			// ホイール径 [mm]
 const static uint32_t SLIP_RATE						= 16000;			// スリップ定数 [mm/s2]
 
 const static uint8_t MODE_NUMBER					= 5;
-const static uint8_t NUMBER_SLALOM_PARAM			= 0;
+const static uint8_t NUMBER_SLALOM_PARAM			= (7 * 1);
 const static uint16_t WAITING_SENSORSTART			= 100;
 
 const static float SEARCH_SPEED						= 240.0;
@@ -48,7 +48,9 @@ const static float TURN_ANGLE_RIGHT					= 90.0;
 const static float TURN_ANGLE_OPPOSITE				= 180.0;
 
 const static float POSITION_EDGE_DETECT_F_L			= 44.0;
-const static float POSITION_EDGE_DETECT_F_R			= 49.0;
+const static float POSITION_EDGE_DETECT_F_R			= 51.0;
+const static float POSITION_POLE_DETECT_F_L			= 48.0;
+const static float POSITION_POLE_DETECT_F_R			= 50.0;
 const static float POSITION_BACKWALL_CORRECTION		= 25.86;
 
 // Maps
@@ -60,8 +62,8 @@ const static uint8_t MAPSIZE_X						= 16;
 const static uint8_t MAPSIZE_Y						= 16;
 const static uint8_t START_X						= 0;
 const static uint8_t START_Y						= 0;
-const static uint8_t GOAL_X							= 5;
-const static uint8_t GOAL_Y							= 6;
+const static uint8_t GOAL_X							= 4;				// [2017] Local:5, AllJapan: 4
+const static uint8_t GOAL_Y							= 4;				// [2017] Local:6, AllJapan: 4
 const static bool ENABLE_FULLGOAL					= true;
 
 const static uint8_t FLAG_EAST						= 0x80;
@@ -115,7 +117,7 @@ const static float GAIN_D_ENCODER					= 0.130909091;
 // Gyro
 const static float GYRO_RESOLUTION					= (1.0 / 16.2);		// deg/s Default:(1/16.4)
 const static uint16_t GYRO_REFERENCE_SAMPLE			= 500;
-const static float GAIN_P_GYRO						= 0.06302453;
+const static float GAIN_P_GYRO						= 0.09453680;
 const static float GAIN_I_GYRO						= 0.01289976;
 const static float GAIN_D_GYRO						= 0.08956118;
 

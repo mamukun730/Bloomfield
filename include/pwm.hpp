@@ -181,7 +181,7 @@ namespace PWM {
 
 			static void TestPIDGain();
 			static void TestWheelDiameter();
-			static void TestDetectEdge(bool slant);
+			static void TestDetectEdge(bool slant, int8_t side);
 			static void TestSlalom(bool use_fan);
 
 		private:
