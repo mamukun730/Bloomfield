@@ -457,8 +457,8 @@ namespace System {
 
 			if ((log_cnt < LOGSIZE) && (TPUA.TSTR.BIT.CST1 == 1) && (TPUA.TSTR.BIT.CST2 == 1)) {
 				logdata1[log_cnt] = Distance.GetValue();
-				logdata2[log_cnt] = (float)Status::Sensor::GetValue(Status::Sensor::LS, false);
-				logdata3[log_cnt] = (float)Status::Sensor::GetValue(Status::Sensor::LC, false);
+				logdata2[log_cnt] = (float)Status::Sensor::GetValue(Status::Sensor::LF, false);
+				logdata3[log_cnt] = (float)Status::Sensor::GetValue(Status::Sensor::RF, false);
 
 				log_cnt++;
 			}
