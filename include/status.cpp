@@ -53,7 +53,7 @@ namespace Status {
 		static uint16_t cnt_v = 0, cnt_a_v = 0, cnt_deg = 0;
 
 		if (ExecuteFlag.GetValue()) {
-			if ((fabsf(Velocity.GetValue(false) - Velocity.GetValue(true)) > 100.0) && (Velocity.GetValue(false) > 0.0)) {
+			if ((fabsf(Velocity.GetValue(false) - Velocity.GetValue(true)) > 120.0) && (Velocity.GetValue(false) > 0.0)) {
 				cnt_v++;
 			} else {
 				cnt_v = 0;
@@ -65,7 +65,7 @@ namespace Status {
 				cnt_a_v = 0;
 			}
 
-			if (cnt_v > 100) {
+			if (cnt_v > 50) {
 				ExecuteFlag.SetValue(false);
 	 			PWM::Motor::Disable();
 	 			System::Interface::SetLEDColor(0, 255, 0, 0);
@@ -86,15 +86,27 @@ namespace Status {
 	void DetectWallEdge() {
 		float distance = Distance.GetValue();
 		static bool flag_l_01 = false, flag_l_02 = false, flag_l_wall = false,
-				flag_r_01 = false, flag_r_02 = false, flag_r_wall = false;
+				flag_r_01 = false, flag_r_02 = false, flag_r_wall = false,
+				wall_bothside = false, start = false;
 
-		if ((distance >= 25.0) && (distance <= 65.0) && WallEdgeFlag.GetValue()) {
+		if ((distance >= 25.0) && (distance <= 65.0) && !start) {
+			if ((Status::Sensor::GetValue(Status::Sensor::LS, false) > WALL_EDGE_THRESHOLD_F_LS)
+					&& (Status::Sensor::GetValue(Status::Sensor::RS, false) > WALL_EDGE_THRESHOLD_F_RS)) {
+				wall_bothside = true;
+			} else {
+				wall_bothside = false;
+			}
+
+			start = true;
+		}
+
+		if ((distance >= 25.0) && (distance <= 65.0) && wall_bothside && WallEdgeFlag.GetValue()) {
 			if (!flag_l_01 && !flag_l_02 && !flag_r_02) {
 				if (Status::Sensor::GetValue(Status::Sensor::LS, false) > WALL_EDGE_THRESHOLD_F_LS) {
 					flag_l_01 = true;
 					flag_l_wall = true;
-				} else if (Status::Sensor::GetValue(Status::Sensor::LC, false) > WALL_EDGE_THRESHOLD_F_LC) {
-					flag_l_01 = true;
+//				} else if (Status::Sensor::GetValue(Status::Sensor::LC, false) > WALL_EDGE_THRESHOLD_F_LC) {
+//					flag_l_01 = true;
 				}
 			} else if (flag_l_01 && !flag_l_02 && !flag_r_02) {
 				if ((Status::Sensor::GetValue(Status::Sensor::LS, false) > WALL_EDGE_THRESHOLD_F_LS)
@@ -103,13 +115,13 @@ namespace Status {
 					flag_l_02 = true;
 					Distance.SetValue(POSITION_EDGE_DETECT_F_L);
 					System::Interface::SetLEDColor(0, 255, 0, 0);
-				} else if ((Status::Sensor::GetValue(Status::Sensor::LS, false) < WALL_EDGE_THRESHOLD_F_LS)
-						&& (Status::Sensor::GetValue(Status::Sensor::LC, false) < POLE_EDGE_THRESHOLD_F_LC)
-						&& !flag_l_wall) {
-					flag_l_02 = true;
-					Distance.SetValue(POSITION_POLE_DETECT_F_L);
-					System::Interface::SetLEDColor(0, 255, 0, 0);
-					System::Interface::SetLEDColor(1, 255, 255, 255);
+//				} else if ((Status::Sensor::GetValue(Status::Sensor::LS, false) < WALL_EDGE_THRESHOLD_F_LS)
+//						&& (Status::Sensor::GetValue(Status::Sensor::LC, false) < POLE_EDGE_THRESHOLD_F_LC)
+//						&& !flag_l_wall) {
+//					flag_l_02 = true;
+//					Distance.SetValue(POSITION_POLE_DETECT_F_L);
+//					System::Interface::SetLEDColor(0, 255, 0, 0);
+//					System::Interface::SetLEDColor(1, 255, 255, 255);
 				}
 			}
 
@@ -117,8 +129,8 @@ namespace Status {
 				if (Status::Sensor::GetValue(Status::Sensor::RS, false) > WALL_EDGE_THRESHOLD_F_RS) {
 					flag_r_01 = true;
 					flag_r_wall = true;
-				} else if (Status::Sensor::GetValue(Status::Sensor::RC, false) > WALL_EDGE_THRESHOLD_F_RC) {
-					flag_r_01 = true;
+//				} else if (Status::Sensor::GetValue(Status::Sensor::RC, false) > WALL_EDGE_THRESHOLD_F_RC) {
+//					flag_r_01 = true;
 				}
 			} else if (flag_r_01 && !flag_r_02 && !flag_l_02) {
 				if ((Status::Sensor::GetValue(Status::Sensor::RS, false) > WALL_EDGE_THRESHOLD_F_RS)
@@ -127,13 +139,13 @@ namespace Status {
 					flag_r_02 = true;
 					Distance.SetValue(POSITION_EDGE_DETECT_F_R);
 					System::Interface::SetLEDColor(0, 0, 255, 0);
-				} else if ((Status::Sensor::GetValue(Status::Sensor::RS, false) < WALL_EDGE_THRESHOLD_F_RS)
-						&& (Status::Sensor::GetValue(Status::Sensor::RC, false) < POLE_EDGE_THRESHOLD_F_RC)
-						&& !flag_r_wall) {
-					flag_r_02 = true;
-					Distance.SetValue(POSITION_POLE_DETECT_F_R);
-					System::Interface::SetLEDColor(0, 0, 255, 0);
-					System::Interface::SetLEDColor(1, 255, 255, 255);
+//				} else if ((Status::Sensor::GetValue(Status::Sensor::RS, false) < WALL_EDGE_THRESHOLD_F_RS)
+//						&& (Status::Sensor::GetValue(Status::Sensor::RC, false) < POLE_EDGE_THRESHOLD_F_RC)
+//						&& !flag_r_wall) {
+//					flag_r_02 = true;
+//					Distance.SetValue(POSITION_POLE_DETECT_F_R);
+//					System::Interface::SetLEDColor(0, 0, 255, 0);
+//					System::Interface::SetLEDColor(1, 255, 255, 255);
 				}
 			}
 		} else {
@@ -143,6 +155,10 @@ namespace Status {
 			flag_r_01 = false;
 			flag_r_02 = false;
 			flag_r_wall = false;
+
+			if (!((distance >= 25.0) && (distance <= 65.0))) {
+				start = false;
+			}
 
 			if (WallEdgeFlag.GetValue()) {
 				System::Interface::SetLEDColor(0, 0, 0, 0);
@@ -2435,8 +2451,8 @@ namespace Mystat {
 		System::Timer::wait_ms(100);
 
 		if (path.mode[0] >= 10) {
-			TargetVelocity.SetValue(480.0);
-			Accel.SetValue(false, 6500.0);
+			TargetVelocity.SetValue(320.0);
+			Accel.SetValue(false, 5500.0);
 		} else {
 			TargetVelocity.SetValue((float)velocity);
 			Accel.SetValue(false, (float)accel);

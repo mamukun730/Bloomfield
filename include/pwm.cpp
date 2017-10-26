@@ -27,14 +27,14 @@ namespace PWM {
  */
 			{ 509.2958, 5187.6446,  4.000,  4.000, 9.500, 8.500, 90.000, 25, 0x03},		// 000: 90度小, 240mm/s, r=27
 
-			// Slip = 60,000
-			{ 458.3662,	7003.3202, 12.000, 12.000, 2.000, 2.000, 90.000, 15, 0x03},		// 001: 90度大,  480mm/s, r=60
-			{ 625.0449, 9767.0272, 25.000, 25.000, 2.000, 2.000,180.000, 20, 0x03},		// 002: 180度大, 480mm/s, r=44
-			{ 611.1550, 9337.7603,  9.000, 10.000, 0.500, 0.500, 45.000, 20, 0x02},		// 003: 45度In,  480mm/s, r=45
-			{ 611.1550, 9337.7603, 35.000, 35.000, 0.100, 0.100, 45.000, 20, 0x08},		// 004: 45度Out, 480mm/s, r=45
-			{ 611.1550,12450.3470, 16.000, 16.000, 0.500, 0.500,135.000, 15, 0x02},		// 005: 135度In, 480mm/s, r=45
-			{ 611.1550,12450.3470, 12.000, 18.000, 2.000, 2.000,135.000, 15, 0x08},		// 006: 135度Out,480mm/s, r=45
-			{ 611.1550,12450.3470, 12.000, 12.000, 0.500, 0.500, 90.000, 15, 0x08},		// 007: 90度,    480mm/s, r=45
+			// Slip = 10,000
+			{ 381.9719,	2431.7084, 10.000, 10.000, 2.000, 2.000, 90.000, 30, 0x03},		// 001: 90度大,  300mm/s, r=45
+			{ 399.7380, 2663.1744, 25.000, 25.000, 2.000, 2.000,180.000, 30, 0x03},		// 002: 180度大, 300mm/s, r=43
+			{ 429.7183, 4616.4464,  7.000,  7.000, 0.500, 0.500, 45.000, 20, 0x02},		// 003: 45度In,  300mm/s, r=40
+			{ 381.9719, 3647.5626, 20.000, 20.000, 0.500, 0.500, 45.000, 20, 0x08},		// 004: 45度Out, 300mm/s, r=45
+			{ 429.7183, 3693.1571,  7.000,  7.000, 0.500, 0.500,135.000, 25, 0x02},		// 005: 135度In, 300mm/s, r=40
+			{ 429.7183, 3693.1571,  0.000,  0.000, 0.500, 0.500,135.000, 25, 0x08},		// 006: 135度Out,300mm/s, r=40
+			{ 429.7183, 5129.3849,  1.000,  1.000, 0.000, 0.000, 90.000, 18, 0x08},		// 007: 90度,    300mm/s, r=40
 		
 		/*
 			{ 458.3662,	7003.3202, 12.000, 12.000, 2.000, 2.000, 90.000, 15, 0x03},		// 001: 90度大,  480mm/s, r=60
@@ -1023,7 +1023,7 @@ namespace PWM {
 
 		while ((Distance.GetValue() < (section_length * (float)section)) && ExecuteFlag.GetValue()) {
 			if (slant) {
-				if (Distance.GetValue() < (section_length * ((float)section - 0.25))) {
+				if (Distance.GetValue() < (section_length * ((float)section - 0.35))) {
 //					Motor::CtrlAvoidObstacle(false);
 				} else {
 					break;
@@ -1164,13 +1164,13 @@ namespace PWM {
 				while (ExecuteFlag.GetValue()) {
 					if ((Status::Sensor::GetValue(Status::Sensor::RS, false) > WALL_EDGE_THRESHOLD_F_RS)
 							&& (Status::Sensor::GetValue(Status::Sensor::RC, false) < WALL_EDGE_THRESHOLD2_F_RC)) {
-						Distance.SetValue(POSITION_EDGE_DETECT_F_R);
+						Distance.SetValue(POSITION_EDGE_DETECT_SH_R);
 						break;
 					}
 
 					if ((Status::Sensor::GetValue(Status::Sensor::RS, false) < WALL_EDGE_THRESHOLD_F_RS)
 							&& (Status::Sensor::GetValue(Status::Sensor::RC, false) < POLE_EDGE_THRESHOLD_F_RC)) {
-						Distance.SetValue(POSITION_POLE_DETECT_F_R);
+						Distance.SetValue(POSITION_POLE_DETECT_SH_R);
 						System::Interface::SetLEDColor(1, 255, 255, 255);
 						break;
 					}
@@ -1189,13 +1189,13 @@ namespace PWM {
 				while (ExecuteFlag.GetValue()) {
 					if ((Status::Sensor::GetValue(Status::Sensor::LS, false) > WALL_EDGE_THRESHOLD_F_LS)
 							&& (Status::Sensor::GetValue(Status::Sensor::LC, false) < WALL_EDGE_THRESHOLD2_F_LC)) {
-						Distance.SetValue(POSITION_EDGE_DETECT_F_L);
+						Distance.SetValue(POSITION_EDGE_DETECT_SH_L);
 						break;
 					}
 
 					if ((Status::Sensor::GetValue(Status::Sensor::LS, false) < WALL_EDGE_THRESHOLD_F_LS)
 							&& (Status::Sensor::GetValue(Status::Sensor::LC, false) < POLE_EDGE_THRESHOLD_F_LC)) {
-						Distance.SetValue(POSITION_POLE_DETECT_F_L);
+						Distance.SetValue(POSITION_POLE_DETECT_SH_L);
 						System::Interface::SetLEDColor(1, 255, 255, 255);
 						break;
 					}
@@ -1355,14 +1355,13 @@ namespace PWM {
 		} else {
 			if ((slalom_param[parameter].wall_correction & 0x04) == 0x04) {
 				if (dir == SLALOM_RIGHT) {
-//					Interface::LED::SetColor(Interface::LED::Yellow, Interface::LED::Left);
+					System::Interface::SetLEDColor(0, 0, 255, 0);
 				} else if (dir == SLALOM_LEFT) {
-//					Interface::LED::SetColor(Interface::LED::Yellow, Interface::LED::Right);
+					System::Interface::SetLEDColor(0, 255, 0, 0);
 				}
 			}
 
 			WallPFlag.SetValue(false);
-			System::Interface::SetLEDColor(0, 0, 255, 0);
 			section_length = SECTION_SLANT;
 		}
 

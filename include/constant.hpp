@@ -94,8 +94,14 @@ const static int8_t SLALOM_LEFT						= 1;
 
 const static float POSITION_EDGE_DETECT_F_L			= 46.0;
 const static float POSITION_EDGE_DETECT_F_R			= 44.0;
-const static float POSITION_POLE_DETECT_F_L			= 45.0;
-const static float POSITION_POLE_DETECT_F_R			= 42.5;
+const static float POSITION_POLE_DETECT_F_L			= 47.5;
+const static float POSITION_POLE_DETECT_F_R			= 43.0;
+
+const static float POSITION_EDGE_DETECT_SH_L		= 44.0;
+const static float POSITION_EDGE_DETECT_SH_R		= 44.0;
+const static float POSITION_POLE_DETECT_SH_L		= 47.5;
+const static float POSITION_POLE_DETECT_SH_R		= 48.0;
+
 const static float POSITION_EDGE_DETECT_SL_L		= SECTION_SLANT - 5.0;
 const static float POSITION_EDGE_DETECT_SL_R		= SECTION_SLANT - 2.5;
 const static float POSITION_BACKWALL_CORRECTION		= 25.86;
@@ -107,7 +113,7 @@ const static uint16_t ADC_WALLSENSOR_P2				= 0x114;			// 0B 01 0001 0100
 //																		   Ch 98 7654 3210
 
 // Sensor
-const static float GAIN_P_WALL						= 0.200;
+const static float GAIN_P_WALL						= 0.130;
 const static float CTRL_WALL_LIMIT					= 720.0;			// deg/s
 
 const static uint8_t SENSOR_AMOUNT					= 7;
@@ -116,7 +122,7 @@ const static uint8_t SENSOR_LED_WAIT				= 127;
 const static uint16_t SENSOR_TARGET_L				= 390;				// 壁制御目標
 const static uint16_t SENSOR_TARGET_R				= 400;
 
-const static uint16_t SENSOR_CTRL_THRESHOLD_L		= 234;				// 壁制御閾値 0.60Ref
+const static uint16_t SENSOR_CTRL_THRESHOLD_L		= 234;				// 壁制御閾値 0.60Ref 234,240
 const static uint16_t SENSOR_CTRL_THRESHOLD_R		= 240;
 
 const static uint16_t SENSOR_DIFF_THRESHOLD			= 7;
@@ -134,10 +140,10 @@ const static uint16_t WALL_EDGE_THRESHOLD2_F_LC		= 130;				// 壁切れ
 const static uint16_t WALL_EDGE_THRESHOLD2_F_RC		= 160;
 
 const static uint16_t WALL_EDGE_THRESHOLD_F_LC		= 85;				// 柱切れ監視閾値
-const static uint16_t WALL_EDGE_THRESHOLD_F_RC		= 190;
+const static uint16_t WALL_EDGE_THRESHOLD_F_RC		= 140;
 
 const static uint16_t POLE_EDGE_THRESHOLD_F_LC		= 75;				// 柱切れ
-const static uint16_t POLE_EDGE_THRESHOLD_F_RC		= 180;
+const static uint16_t POLE_EDGE_THRESHOLD_F_RC		= 130;
 
 const static uint16_t POLE_EDGE_THRESHOLD_SL_START	= 250;				// 柱切れ(斜め)
 const static uint16_t POLE_EDGE_THRESHOLD_SL_END	= 200;
