@@ -56,8 +56,8 @@ const static uint8_t MAPSIZE_X						= 16;
 const static uint8_t MAPSIZE_Y						= 16;
 const static uint8_t START_X						= 0;
 const static uint8_t START_Y						= 0;
-const static uint8_t GOAL_X							= 4;				// [2017] Local:5, AllJapan: 4
-const static uint8_t GOAL_Y							= 4;				// [2017] Local:6, AllJapan: 4
+const static uint8_t GOAL_X							= 5;				// [2017] Local:5, AllJapan: 4
+const static uint8_t GOAL_Y							= 6;				// [2017] Local:6, AllJapan: 4
 const static bool ENABLE_FULLGOAL					= true;
 
 const static uint8_t FLAG_EAST						= 0x80;
@@ -113,7 +113,8 @@ const static uint16_t ADC_WALLSENSOR_P2				= 0x114;			// 0B 01 0001 0100
 //																		   Ch 98 7654 3210
 
 // Sensor
-const static float GAIN_P_WALL						= 0.130;
+const static float GAIN_P_WALL						= 0.300;
+const static float GAIN_P_WALL_SH					= 0.125;
 const static float CTRL_WALL_LIMIT					= 720.0;			// deg/s
 
 const static uint8_t SENSOR_AMOUNT					= 7;
@@ -125,7 +126,7 @@ const static uint16_t SENSOR_TARGET_R				= 400;
 const static uint16_t SENSOR_CTRL_THRESHOLD_L		= 234;				// 壁制御閾値 0.60Ref 234,240
 const static uint16_t SENSOR_CTRL_THRESHOLD_R		= 240;
 
-const static uint16_t SENSOR_DIFF_THRESHOLD			= 7;
+const static uint16_t SENSOR_DIFF_THRESHOLD			= 5;
 
 const static uint16_t SENSOR_WALL_EXIST_L			= 140;				// 壁有無閾値 (壁切れセンサ利用)
 const static uint16_t SENSOR_WALL_EXIST_F			= 130;
@@ -133,17 +134,17 @@ const static uint16_t SENSOR_WALL_EXIST_R			= 140;
 
 const static uint16_t SENSOR_WALL_EXIST_F_NEAR		= 200;
 
-const static uint16_t WALL_EDGE_THRESHOLD_F_LS		= 253;				// 壁切れ監視閾値 0.65Ref
-const static uint16_t WALL_EDGE_THRESHOLD_F_RS		= 260;
+const static uint16_t WALL_EDGE_THRESHOLD_F_LS		= 176;				// 壁切れ監視閾値 0.45Ref
+const static uint16_t WALL_EDGE_THRESHOLD_F_RS		= 180;
 
 const static uint16_t WALL_EDGE_THRESHOLD2_F_LC		= 130;				// 壁切れ
 const static uint16_t WALL_EDGE_THRESHOLD2_F_RC		= 160;
 
-const static uint16_t WALL_EDGE_THRESHOLD_F_LC		= 85;				// 柱切れ監視閾値
-const static uint16_t WALL_EDGE_THRESHOLD_F_RC		= 140;
+const static uint16_t WALL_EDGE_THRESHOLD_F_LC		= 65;				// 柱切れ監視閾値
+const static uint16_t WALL_EDGE_THRESHOLD_F_RC		= 120;
 
-const static uint16_t POLE_EDGE_THRESHOLD_F_LC		= 75;				// 柱切れ
-const static uint16_t POLE_EDGE_THRESHOLD_F_RC		= 130;
+const static uint16_t POLE_EDGE_THRESHOLD_F_LC		= 55;				// 柱切れ
+const static uint16_t POLE_EDGE_THRESHOLD_F_RC		= 110;
 
 const static uint16_t POLE_EDGE_THRESHOLD_SL_START	= 250;				// 柱切れ(斜め)
 const static uint16_t POLE_EDGE_THRESHOLD_SL_END	= 200;

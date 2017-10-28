@@ -843,11 +843,15 @@ namespace PWM {
 		float v_actual = 0.0, v_target = 0.0;
 		float av_actual = 0.0, av_target = 0.0;
 		float duty_r = 0.0, duty_l = 0.0, torque_r = 0.0, torque_l = 0.0;
-		float ff_r = 0.0, ff_l = 0.0, fb_r = 0.0, fb_l = 0.0, battery_v = 0.0;
+		float ff_r = 0.0, ff_l = 0.0, fb_r = 0.0, fb_l = 0.0, battery_v = 0.0, gain_p_wall = GAIN_P_WALL;
 
 		static uint16_t cnt = 0;
 
 		if (WallPFlag.GetValue()) {
+			if (Velocity.GetValue(false) > SEARCH_SPEED) {
+				gain_p_wall = GAIN_P_WALL_SH;
+			}
+
 			a_velocity_wall = -1.0 * GAIN_P_WALL * Status::Calc::WallControlQuantity();
 
 			if (fabsf(a_velocity_wall) < CTRL_WALL_LIMIT) {
@@ -1151,9 +1155,10 @@ namespace PWM {
 		// TODO: 壁切れ状態/しきい値再チェック
 
 		WallEdgeFlag.SetValue(false);
+		WallPFlag.SetValue(false);
 
 		if ((slalom_param[parameter].wall_correction & 0x02) == 0x02) {
-			WallPFlag.SetValue(true);
+//			WallPFlag.SetValue(true);
 
 			if (dir == SLALOM_RIGHT) {
 				System::Interface::SetLEDColor(1, 0, 255, 0);
@@ -1350,7 +1355,7 @@ namespace PWM {
 //		Interface::LED::SetColor(Interface::LED::Red, led_dir);
 
 		if ((slalom_param[parameter].wall_correction & 0x01) == 0x01) {
-			WallPFlag.SetValue(true);
+//			WallPFlag.SetValue(true);
 			section_length = SECTION_STRAIGHT;
 		} else {
 			if ((slalom_param[parameter].wall_correction & 0x04) == 0x04) {

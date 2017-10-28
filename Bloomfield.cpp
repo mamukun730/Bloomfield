@@ -102,14 +102,16 @@ int main(void) {
 
 			case 3:
 //				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, false, false);
-				Mystat::Map::SendData();
+//				Mystat::Map::SendData();
+				Mystat::Map::MakePath(480, 320, 320, 3000);
+				Mystat::Map::ReadPath(480, 320, 320, 3000);
 				break;
 
 			case 4:
 //				PWM::Motor::TestSlalom(false);
 //				PWM::Motor::TestDetectEdge(true, SLALOM_LEFT);
-				Mystat::Map::MakePath(480, 320, 320, 3000);
-				Mystat::Map::ReadPath(480, 320, 320, 3000);
+				Mystat::Map::MakePath(640, 320, 320, 3000);
+				Mystat::Map::ReadPath(640, 320, 320, 3000);
 
 //				while(1) {
 //					sprintf(senddata, "%4d, %4d, %4d, %4d, %4d, %4d, %4d\n", Status::Sensor::GetValue(Status::Sensor::LS, false), Status::Sensor::GetValue(Status::Sensor::LC, false), Status::Sensor::GetValue(Status::Sensor::LF, false), Status::Sensor::GetValue(Status::Sensor::F, false), Status::Sensor::GetValue(Status::Sensor::RF, false), Status::Sensor::GetValue(Status::Sensor::RC, false), Status::Sensor::GetValue(Status::Sensor::RS, false));
