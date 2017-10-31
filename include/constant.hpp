@@ -18,7 +18,7 @@ const static uint32_t CMT1_INTERVAL					= 10;				// [us]
 
 const static float BATT_VOLTAGE_WARNING				= 3.85;
 const static float BATT_VOLTAGE_ERROR				= 3.75;
-const static uint16_t LOGSIZE						= 2000;
+const static uint16_t LOGSIZE						= 5;
 
 // Math
 const static float M_PI								= 3.14159265358979;
@@ -56,8 +56,8 @@ const static uint8_t MAPSIZE_X						= 16;
 const static uint8_t MAPSIZE_Y						= 16;
 const static uint8_t START_X						= 0;
 const static uint8_t START_Y						= 0;
-const static uint8_t GOAL_X							= 5;				// [2017] Local:5, AllJapan: 4
-const static uint8_t GOAL_Y							= 6;				// [2017] Local:6, AllJapan: 4
+const static uint8_t GOAL_X							= 4;				// [2017] Local:5, AllJapan: 4
+const static uint8_t GOAL_Y							= 4;				// [2017] Local:6, AllJapan: 4
 const static bool ENABLE_FULLGOAL					= true;
 
 const static uint8_t FLAG_EAST						= 0x80;
@@ -92,15 +92,15 @@ const static int8_t SIDE_NONE						= 127;
 const static int8_t SLALOM_RIGHT					= -1;
 const static int8_t SLALOM_LEFT						= 1;
 
-const static float POSITION_EDGE_DETECT_F_L			= 46.0;
-const static float POSITION_EDGE_DETECT_F_R			= 44.0;
-const static float POSITION_POLE_DETECT_F_L			= 47.5;
-const static float POSITION_POLE_DETECT_F_R			= 43.0;
+const static float POSITION_EDGE_DETECT_F_L			= 45.0;
+const static float POSITION_EDGE_DETECT_F_R			= 46.0;
+const static float POSITION_POLE_DETECT_F_L			= 46.0;
+const static float POSITION_POLE_DETECT_F_R			= 47.0;
 
-const static float POSITION_EDGE_DETECT_SH_L		= 44.0;
-const static float POSITION_EDGE_DETECT_SH_R		= 44.0;
-const static float POSITION_POLE_DETECT_SH_L		= 47.5;
-const static float POSITION_POLE_DETECT_SH_R		= 48.0;
+const static float POSITION_EDGE_DETECT_SH_L		= 45.0;
+const static float POSITION_EDGE_DETECT_SH_R		= 46.0;
+const static float POSITION_POLE_DETECT_SH_L		= 46.0;
+const static float POSITION_POLE_DETECT_SH_R		= 47.0;
 
 const static float POSITION_EDGE_DETECT_SL_L		= SECTION_SLANT - 5.0;
 const static float POSITION_EDGE_DETECT_SL_R		= SECTION_SLANT - 2.5;
@@ -113,24 +113,24 @@ const static uint16_t ADC_WALLSENSOR_P2				= 0x114;			// 0B 01 0001 0100
 //																		   Ch 98 7654 3210
 
 // Sensor
-const static float GAIN_P_WALL						= 0.300;
-const static float GAIN_P_WALL_SH					= 0.125;
+const static float GAIN_P_WALL						= 0.050;
+const static float GAIN_P_WALL_SH					= 0.050;
 const static float CTRL_WALL_LIMIT					= 720.0;			// deg/s
 
 const static uint8_t SENSOR_AMOUNT					= 7;
 const static uint8_t SENSOR_LED_WAIT				= 127;
 
-const static uint16_t SENSOR_TARGET_L				= 390;				// 壁制御目標
-const static uint16_t SENSOR_TARGET_R				= 400;
+const static uint16_t SENSOR_TARGET_L				= 350;				// 壁制御目標
+const static uint16_t SENSOR_TARGET_R				= 350;
 
-const static uint16_t SENSOR_CTRL_THRESHOLD_L		= 234;				// 壁制御閾値 0.60Ref 234,240
-const static uint16_t SENSOR_CTRL_THRESHOLD_R		= 240;
+const static uint16_t SENSOR_CTRL_THRESHOLD_L		= 260;				// 壁制御閾値
+const static uint16_t SENSOR_CTRL_THRESHOLD_R		= 260;
 
 const static uint16_t SENSOR_DIFF_THRESHOLD			= 5;
 
-const static uint16_t SENSOR_WALL_EXIST_L			= 140;				// 壁有無閾値 (壁切れセンサ利用)
+const static uint16_t SENSOR_WALL_EXIST_L			= 90;				// 壁有無閾値 (壁切れセンサ利用)
 const static uint16_t SENSOR_WALL_EXIST_F			= 130;
-const static uint16_t SENSOR_WALL_EXIST_R			= 140;
+const static uint16_t SENSOR_WALL_EXIST_R			= 120;
 
 const static uint16_t SENSOR_WALL_EXIST_F_NEAR		= 200;
 
@@ -146,8 +146,8 @@ const static uint16_t WALL_EDGE_THRESHOLD_F_RC		= 120;
 const static uint16_t POLE_EDGE_THRESHOLD_F_LC		= 55;				// 柱切れ
 const static uint16_t POLE_EDGE_THRESHOLD_F_RC		= 110;
 
-const static uint16_t POLE_EDGE_THRESHOLD_SL_START	= 250;				// 柱切れ(斜め)
-const static uint16_t POLE_EDGE_THRESHOLD_SL_END	= 200;
+const static uint16_t POLE_EDGE_THRESHOLD_SL_START	= 110;				// 柱切れ(斜め)
+const static uint16_t POLE_EDGE_THRESHOLD_SL_END	= 100;
 
 // Motor
 const static uint16_t MOTOR_OPCYCLE					= 240;				// 200kHz

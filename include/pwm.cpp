@@ -25,9 +25,10 @@ namespace PWM {
 			bit	3		2		1		0
 				Sl_IN	Sl_OUT	St_IN	St_OUT
  */
-			{ 509.2958, 5187.6446,  4.000,  4.000, 9.500, 8.500, 90.000, 25, 0x03},		// 000: 90度小, 240mm/s, r=27
+			// Slip = 16,000?
+			{ 550.0394, 6050.8686,  8.000,  8.000,13.000, 9.000, 90.000, 25, 0x03},		// 000: 90度小, 240mm/s, r=25
 
-			// Slip = 10,000
+			// Slip = 10,000?
 			{ 381.9719,	2431.7084, 10.000, 10.000, 2.000, 2.000, 90.000, 30, 0x03},		// 001: 90度大,  300mm/s, r=45
 			{ 399.7380, 2663.1744, 25.000, 25.000, 2.000, 2.000,180.000, 30, 0x03},		// 002: 180度大, 300mm/s, r=43
 			{ 429.7183, 4616.4464,  7.000,  7.000, 0.500, 0.500, 45.000, 20, 0x02},		// 003: 45度In,  300mm/s, r=40
@@ -1487,6 +1488,7 @@ namespace PWM {
 
 			PWM::Motor::AccelRun(1, true, 480.0, 0.0, 38.4, 3000.0);
 		} else {
+			Distance.SetValue(POSITION_BACKWALL_CORRECTION);
 			PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, false);
 			PWM::Motor::Run(1, false);
 			WallEdgeFlag.SetValue(false);
@@ -1549,8 +1551,8 @@ namespace PWM {
 
 //		PWM::Motor::Slalom(3, SLALOM_LEFT);
 //		PWM::Motor::Slalom(7, SLALOM_RIGHT);
-		PWM::Motor::Slalom(SLALOM_RIGHT);
-//		PWM::Motor::Slalom(SLALOM_LEFT);
+//		PWM::Motor::Slalom(SLALOM_RIGHT);
+		PWM::Motor::Slalom(SLALOM_LEFT);
 
 		PWM::Motor::AccelDecel(0.0, -SEARCH_ACCEL, false);
 

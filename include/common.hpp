@@ -23,8 +23,9 @@
 #include "pwm.hpp"
 
 #ifdef __cplusplus
-extern "C" int16_t log_cnt;
-extern "C" float logdata1[LOGSIZE], logdata2[LOGSIZE], logdata3[LOGSIZE];
+extern "C" uint16_t log_cnt;
+extern "C" uint16_t log_sen_ls[LOGSIZE], log_sen_lc[LOGSIZE], log_sen_rc[LOGSIZE], log_sen_rs[LOGSIZE];
+extern "C" float log_v_actual[LOGSIZE], log_v_target[LOGSIZE], log_a_v_actual[LOGSIZE], log_a_v_target[LOGSIZE];
 #endif
 
 extern Status::Value Velocity;

@@ -2451,7 +2451,7 @@ namespace Mystat {
 		System::Timer::wait_ms(100);
 
 		if (path.mode[0] >= 10) {
-			TargetVelocity.SetValue(320.0);
+			TargetVelocity.SetValue(300.0);
 			Accel.SetValue(false, 5500.0);
 		} else {
 			TargetVelocity.SetValue((float)velocity);

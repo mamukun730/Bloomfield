@@ -456,9 +456,15 @@ namespace System {
 			PWM::Motor::SetDuty();
 
 			if ((log_cnt < LOGSIZE) && (TPUA.TSTR.BIT.CST1 == 1) && (TPUA.TSTR.BIT.CST2 == 1)) {
-				logdata1[log_cnt] = Distance.GetValue();
-				logdata2[log_cnt] = (float)Status::Sensor::GetValue(Status::Sensor::LF, false);
-				logdata3[log_cnt] = (float)Status::Sensor::GetValue(Status::Sensor::RF, false);
+				log_sen_ls[log_cnt] = Status::Sensor::GetValue(Status::Sensor::LS, false);
+				log_sen_lc[log_cnt] = Status::Sensor::GetValue(Status::Sensor::LC, false);
+				log_sen_rc[log_cnt] = Status::Sensor::GetValue(Status::Sensor::RC, false);
+				log_sen_rs[log_cnt] = Status::Sensor::GetValue(Status::Sensor::RS, false);
+				log_v_target[log_cnt] = Velocity.GetValue(false);
+				log_v_actual[log_cnt] = Velocity.GetValue(true);
+				log_a_v_target[log_cnt] = A_Velocity.GetValue(false);
+				log_a_v_actual[log_cnt] = Distance.GetValue();
+//				log_a_v_actual[log_cnt] = A_Velocity.GetValue(true);
 
 				log_cnt++;
 			}

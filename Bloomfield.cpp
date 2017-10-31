@@ -18,8 +18,9 @@
 
 #include "include/common.hpp"
 
-int16_t log_cnt = 0;
-float logdata1[LOGSIZE], logdata2[LOGSIZE], logdata3[LOGSIZE];
+uint16_t log_cnt = 0;
+uint16_t log_sen_ls[LOGSIZE], log_sen_lc[LOGSIZE], log_sen_rc[LOGSIZE], log_sen_rs[LOGSIZE];
+float log_v_actual[LOGSIZE], log_v_target[LOGSIZE], log_a_v_actual[LOGSIZE], log_a_v_target[LOGSIZE];
 
 Status::Value Velocity;
 Status::Value2 VelocityDiff;
@@ -109,7 +110,7 @@ int main(void) {
 
 			case 4:
 //				PWM::Motor::TestSlalom(false);
-//				PWM::Motor::TestDetectEdge(true, SLALOM_LEFT);
+//				PWM::Motor::TestDetectEdge(false, SLALOM_RIGHT);
 				Mystat::Map::MakePath(640, 320, 320, 3000);
 				Mystat::Map::ReadPath(640, 320, 320, 3000);
 
@@ -132,6 +133,34 @@ int main(void) {
 				break;
 		}
 
+//		while(SW_NEXT == 1);
+//		System::Interface::SetLEDColor(0, 0, 0, 255);
+//		System::Timer::wait_ms(2000);
+//		Status::Calc::SetGyroReference();
+//		System::Timer::wait_ms(1000);
+//
+//		ExecuteFlag.SetValue(true);
+//		PWM::Motor::Enable();
+//		PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, false);
+//	//	PWM::Motor::Run(4, false);
+//		PWM::Motor::AccelDecel(0.0, -SEARCH_ACCEL, false);
+//	//	PWM::Motor::AccelDecel(480.0, 4000.0, true);
+//	//	PWM::Motor::Slalom(3, SLALOM_LEFT);
+//	//	PWM::Motor::AccelRun(4, true, 480.0, 480.0, 0.0, 4000.0);
+//	//	System::Timer::wait_ms(1500);
+//		PWM::Motor::Disable();
+//		ExecuteFlag.SetValue(false);
+//		System::Timer::wait_ms(1000);
+//
+//		while(SW_NEXT == 1);
+//		System::Interface::SetLEDColor(0, 0, 255, 0);
+//		for (uint16_t cnt = 0; cnt < LOGSIZE; cnt++) {
+//			sprintf(senddata, "%d, %d, %d, %d, %f, %f, %f, %f\n",
+//					log_sen_ls[cnt], log_sen_lc[cnt], log_sen_rc[cnt], log_sen_rs[cnt],
+//					log_v_target[cnt], log_v_actual[cnt], log_a_v_target[cnt], log_a_v_actual[cnt]);
+//			System::SCI::SendChar(senddata);
+//		}
+
 		ExecuteFlag.SetValue(false);
 
 		System::Timer::wait_ms(1000);
@@ -139,27 +168,6 @@ int main(void) {
 
 		while(SW_NEXT == 1);
 	}
-
-//	while(SW_NEXT == 1);
-//	System::Interface::SetLEDColor(0, 0, 0, 255);
-//	System::Timer::wait_ms(2000);
-//	Status::Calc::SetGyroReference();
-//	System::Timer::wait_ms(1000);
-//
-//	ExecuteFlag.SetValue(true);
-//	PWM::Motor::Enable();
-//	PWM::Motor::AccelDecel(480.0, 4000.0, true);
-//	PWM::Motor::Slalom(3, SLALOM_LEFT);
-//	PWM::Motor::AccelRun(4, true, 480.0, 480.0, 0.0, 4000.0);
-//	PWM::Motor::Disable();
-//	System::Timer::wait_ms(1000);
-//
-//	while(SW_NEXT == 1);
-//	System::Interface::SetLEDColor(0, 0, 255, 0);
-//	for (uint16_t cnt = 0; cnt < LOGSIZE; cnt++) {
-//		sprintf(senddata, "%f, %f, %f\n", logdata1[cnt], logdata2[cnt], logdata3[cnt]);
-//		System::SCI::SendChar(senddata);
-//	}
 
 	return 0;
 }
