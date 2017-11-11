@@ -47,6 +47,8 @@ const static float TURN_ANGLE_ACCEL					= 3000.0;
 const static float TURN_ANGLE_RIGHT					= 90.0;
 const static float TURN_ANGLE_OPPOSITE				= 180.0;
 
+const static float TURN_ANGLE_SPEED_SLANT			= 20.0;
+
 // Maps
 const static uint32_t INF							= 1000000000;
 const static float SECTION_STRAIGHT					= 90.000;
@@ -92,18 +94,20 @@ const static int8_t SIDE_NONE						= 127;
 const static int8_t SLALOM_RIGHT					= -1;
 const static int8_t SLALOM_LEFT						= 1;
 
-const static float POSITION_EDGE_DETECT_F_L			= 45.0;
-const static float POSITION_EDGE_DETECT_F_R			= 46.0;
-const static float POSITION_POLE_DETECT_F_L			= 46.0;
-const static float POSITION_POLE_DETECT_F_R			= 47.0;
+// 壁切れ読み取り位置
+// 探索中は横センサ利用, 最短中は中横センサ利用
+const static float POSITION_EDGE_DETECT_F_L			= 65.0;
+const static float POSITION_EDGE_DETECT_F_R			= 60.0;
+const static float POSITION_POLE_DETECT_F_L			= 65.0;
+const static float POSITION_POLE_DETECT_F_R			= 60.0;
 
-const static float POSITION_EDGE_DETECT_SH_L		= 45.0;
-const static float POSITION_EDGE_DETECT_SH_R		= 46.0;
-const static float POSITION_POLE_DETECT_SH_L		= 46.0;
-const static float POSITION_POLE_DETECT_SH_R		= 47.0;
+const static float POSITION_EDGE_DETECT_SH_L		= 43.0;
+const static float POSITION_EDGE_DETECT_SH_R		= 40.0;
+const static float POSITION_POLE_DETECT_SH_L		= 45.0;
+const static float POSITION_POLE_DETECT_SH_R		= 42.0;
 
-const static float POSITION_EDGE_DETECT_SL_L		= SECTION_SLANT - 5.0;
-const static float POSITION_EDGE_DETECT_SL_R		= SECTION_SLANT - 2.5;
+const static float POSITION_EDGE_DETECT_SL_L		= SECTION_SLANT - 9.0;
+const static float POSITION_EDGE_DETECT_SL_R		= SECTION_SLANT - 9.0;
 const static float POSITION_BACKWALL_CORRECTION		= 25.86;
 
 // ADC
@@ -113,31 +117,38 @@ const static uint16_t ADC_WALLSENSOR_P2				= 0x114;			// 0B 01 0001 0100
 //																		   Ch 98 7654 3210
 
 // Sensor
-const static float GAIN_P_WALL						= 0.050;
-const static float GAIN_P_WALL_SH					= 0.050;
+const static float GAIN_P_WALL						= 0.075;
+const static float GAIN_P_WALL_SH					= 0.075;
 const static float CTRL_WALL_LIMIT					= 720.0;			// deg/s
 
 const static uint8_t SENSOR_AMOUNT					= 7;
 const static uint8_t SENSOR_LED_WAIT				= 127;
 
-const static uint16_t SENSOR_TARGET_L				= 350;				// 壁制御目標
-const static uint16_t SENSOR_TARGET_R				= 350;
+const static uint16_t SENSOR_TARGET_L				= 390;				// 壁制御目標
+const static uint16_t SENSOR_TARGET_R				= 400;
 
 const static uint16_t SENSOR_CTRL_THRESHOLD_L		= 260;				// 壁制御閾値
 const static uint16_t SENSOR_CTRL_THRESHOLD_R		= 260;
+const static uint16_t SENSOR_CTRL_THRESHOLD_LC		= 800;
+const static uint16_t SENSOR_CTRL_THRESHOLD_RC		= 800;
 
 const static uint16_t SENSOR_DIFF_THRESHOLD			= 5;
 
-const static uint16_t SENSOR_WALL_EXIST_L			= 90;				// 壁有無閾値 (壁切れセンサ利用)
-const static uint16_t SENSOR_WALL_EXIST_F			= 130;
+const static uint16_t SENSOR_WALL_EXIST_L			= 90;				// 壁有無閾値
+const static uint16_t SENSOR_WALL_EXIST_F			= 110;
 const static uint16_t SENSOR_WALL_EXIST_R			= 120;
 
 const static uint16_t SENSOR_WALL_EXIST_F_NEAR		= 200;
 
-const static uint16_t WALL_EDGE_THRESHOLD_F_LS		= 176;				// 壁切れ監視閾値 0.45Ref
-const static uint16_t WALL_EDGE_THRESHOLD_F_RS		= 180;
+const static uint16_t WALL_EDGE_THRESHOLD_SE_LS		= 312;				// 壁切れ監視閾値(探索) 0.80Ref
+const static uint16_t WALL_EDGE_THRESHOLD_SE_RS		= 320;
 
-const static uint16_t WALL_EDGE_THRESHOLD2_F_LC		= 130;				// 壁切れ
+const static uint16_t WALL_EDGE_THRESHOLD_SH_LS		= 176;				// 壁切れ監視閾値(最短) 0.45Ref
+const static uint16_t WALL_EDGE_THRESHOLD_SH_RS		= 180;
+
+const static uint16_t WALL_EDGE_THRESHOLD2_F_LS		= 300;				// 壁切れ
+const static uint16_t WALL_EDGE_THRESHOLD2_F_RS		= 300;
+const static uint16_t WALL_EDGE_THRESHOLD2_F_LC		= 130;
 const static uint16_t WALL_EDGE_THRESHOLD2_F_RC		= 160;
 
 const static uint16_t WALL_EDGE_THRESHOLD_F_LC		= 65;				// 柱切れ監視閾値
@@ -161,7 +172,7 @@ const static float MOTOR_R							= 1.700;			// 端子間抵抗 [Ω]
 // Encoder
 const static uint16_t ENCODER_INIT_VAL				= 32767;
 const static uint16_t ENCODER_MAX					= 4096;
-const static float GAIN_P_ENCODER					= 0.276363634;
+const static float GAIN_P_ENCODER					= 0.345454543;
 const static float GAIN_I_ENCODER					= 0.004242424;
 const static float GAIN_D_ENCODER					= 0.130909091;
 

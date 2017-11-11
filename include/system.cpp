@@ -226,7 +226,7 @@ namespace System {
 			SCI::SendChar(senddata);
 
 			// WalloffThreshold
-			sprintf(senddata, "EdgeDetectThreshold:\t%d, %d\n", WALL_EDGE_THRESHOLD_F_LS, WALL_EDGE_THRESHOLD_F_RS);
+			sprintf(senddata, "EdgeDetectThreshold:\t%d, %d\n", WALL_EDGE_THRESHOLD_SE_LS, WALL_EDGE_THRESHOLD_SE_RS);
 			SCI::SendChar(senddata);
 
 			// Map
@@ -463,8 +463,8 @@ namespace System {
 				log_v_target[log_cnt] = Velocity.GetValue(false);
 				log_v_actual[log_cnt] = Velocity.GetValue(true);
 				log_a_v_target[log_cnt] = A_Velocity.GetValue(false);
-				log_a_v_actual[log_cnt] = Distance.GetValue();
-//				log_a_v_actual[log_cnt] = A_Velocity.GetValue(true);
+//				log_a_v_actual[log_cnt] = Distance.GetValue();
+				log_a_v_actual[log_cnt] = A_Velocity.GetValue(true);
 
 				log_cnt++;
 			}
@@ -532,7 +532,7 @@ namespace System {
 	}
 
 	bool Flash::WriteWallData() {
-		unsigned char wall[16][16], ret;
+		unsigned char wall[MAPSIZE_X][MAPSIZE_Y], ret;
 		uint32_t flash_addr = g_flash_BlockAddresses[BLOCK_DB0];
 		uint32_t buffer_addr = (uint32_t)wall;
 		uint16_t bytes = sizeof(wall);
@@ -817,7 +817,7 @@ namespace System {
 				mode--;
 			}
 
-			if ((Status::Calc::ZAccelOutToMetric() < (0.5 * GRAVITY_METRIC)) && (Status::Calc::GyroOutToA_Velocity_Y() < 180.0) && (Status::Calc::GyroOutToA_Velocity_Y() > -180.0)) {
+			if ((Status::Calc::ZAccelOutToMetric() < (-0.5 * GRAVITY_METRIC)) && (Status::Calc::GyroOutToA_Velocity_Y() < 180.0) && (Status::Calc::GyroOutToA_Velocity_Y() > -180.0)) {
 				break;
 			}
 

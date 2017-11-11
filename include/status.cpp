@@ -90,8 +90,8 @@ namespace Status {
 				wall_bothside = false, start = false;
 
 		if ((distance >= 25.0) && (distance <= 65.0) && !start) {
-			if ((Status::Sensor::GetValue(Status::Sensor::LS, false) > WALL_EDGE_THRESHOLD_F_LS)
-					&& (Status::Sensor::GetValue(Status::Sensor::RS, false) > WALL_EDGE_THRESHOLD_F_RS)) {
+			if ((Status::Sensor::GetValue(Status::Sensor::LS, false) > WALL_EDGE_THRESHOLD_SE_LS)
+					&& (Status::Sensor::GetValue(Status::Sensor::RS, false) > WALL_EDGE_THRESHOLD_SE_RS)) {
 				wall_bothside = true;
 			} else {
 				wall_bothside = false;
@@ -100,21 +100,20 @@ namespace Status {
 			start = true;
 		}
 
-		if ((distance >= 25.0) && (distance <= 65.0) && wall_bothside && WallEdgeFlag.GetValue()) {
+		if ((distance >= 45.0) && (distance <= 85.0) && wall_bothside && WallEdgeFlag.GetValue()) {
 			if (!flag_l_01 && !flag_l_02 && !flag_r_02) {
-				if (Status::Sensor::GetValue(Status::Sensor::LS, false) > WALL_EDGE_THRESHOLD_F_LS) {
+				if (Status::Sensor::GetValue(Status::Sensor::LS, false) > WALL_EDGE_THRESHOLD_SE_LS) {
 					flag_l_01 = true;
 					flag_l_wall = true;
 //				} else if (Status::Sensor::GetValue(Status::Sensor::LC, false) > WALL_EDGE_THRESHOLD_F_LC) {
 //					flag_l_01 = true;
 				}
 			} else if (flag_l_01 && !flag_l_02 && !flag_r_02) {
-				if ((Status::Sensor::GetValue(Status::Sensor::LS, false) > WALL_EDGE_THRESHOLD_F_LS)
-						&& (Status::Sensor::GetValue(Status::Sensor::LC, false) < WALL_EDGE_THRESHOLD2_F_LC)
+				if ((Status::Sensor::GetValue(Status::Sensor::LS, false) < WALL_EDGE_THRESHOLD2_F_LS)
 						&& flag_l_wall) {
 					flag_l_02 = true;
 					Distance.SetValue(POSITION_EDGE_DETECT_F_L);
-					System::Interface::SetLEDColor(0, 255, 0, 0);
+					System::Interface::SetLEDColor(0, 255, 140, 0);
 //				} else if ((Status::Sensor::GetValue(Status::Sensor::LS, false) < WALL_EDGE_THRESHOLD_F_LS)
 //						&& (Status::Sensor::GetValue(Status::Sensor::LC, false) < POLE_EDGE_THRESHOLD_F_LC)
 //						&& !flag_l_wall) {
@@ -126,15 +125,14 @@ namespace Status {
 			}
 
 			if (!flag_r_01 && !flag_r_02 && !flag_l_02) {
-				if (Status::Sensor::GetValue(Status::Sensor::RS, false) > WALL_EDGE_THRESHOLD_F_RS) {
+				if (Status::Sensor::GetValue(Status::Sensor::RS, false) > WALL_EDGE_THRESHOLD_SE_RS) {
 					flag_r_01 = true;
 					flag_r_wall = true;
 //				} else if (Status::Sensor::GetValue(Status::Sensor::RC, false) > WALL_EDGE_THRESHOLD_F_RC) {
 //					flag_r_01 = true;
 				}
 			} else if (flag_r_01 && !flag_r_02 && !flag_l_02) {
-				if ((Status::Sensor::GetValue(Status::Sensor::RS, false) > WALL_EDGE_THRESHOLD_F_RS)
-						&& (Status::Sensor::GetValue(Status::Sensor::RC, false) < WALL_EDGE_THRESHOLD2_F_RC)
+				if ((Status::Sensor::GetValue(Status::Sensor::RS, false) < WALL_EDGE_THRESHOLD2_F_LS)
 						&& flag_r_wall) {
 					flag_r_02 = true;
 					Distance.SetValue(POSITION_EDGE_DETECT_F_R);
@@ -453,7 +451,7 @@ namespace Status {
 
 		switch (dir) {
 			case SIDE_LEFT:
-				if (Sensor::GetValue(Sensor::LC, false) > SENSOR_WALL_EXIST_L) {
+				if (Sensor::GetValue(Sensor::LS, false) > SENSOR_WALL_EXIST_L) {
 					return_val = true;
 				}
 				break;
@@ -465,7 +463,7 @@ namespace Status {
 				break;
 
 			case SIDE_RIGHT:
-				if (Sensor::GetValue(Sensor::RC, false) > SENSOR_WALL_EXIST_R) {
+				if (Sensor::GetValue(Sensor::RS, false) > SENSOR_WALL_EXIST_R) {
 					return_val = true;
 				}
 				break;
@@ -2276,7 +2274,7 @@ namespace Mystat {
 				path.velocity[path_cnt] = (float)slant_velocity;
 			} else {
 				path.mode[path_cnt] = 0;
-				path.velocity[path_cnt] = (float)slant_velocity;
+				path.velocity[path_cnt] = (float)velocity;
 			}
 	    }
 
@@ -2381,17 +2379,16 @@ namespace Mystat {
 						path.velocity_next[path_cnt] = path.velocity[path_cnt + i + 1];
 						accel_distance = ((float)(path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2 * (float)accel));
 
-	                    if (path_cnt == 0) {
-	                        accel_distance += ((float)(path.velocity[path_cnt] * path.velocity[path_cnt]) / (2 * (float)accel));
+						if (path_cnt == 0) {
+							accel_distance += ((float)(path.velocity[path_cnt] * path.velocity[path_cnt]) / (2 * (float)accel));
 
-	                        if (accel_distance > (SECTION_STRAIGHT * (float)j)) {
-	                            path.velocity[path_cnt] = (short)sqrt(2.0 * (float)accel * SECTION_STRAIGHT * 0.25 * j);
-	                            path.decel_length[path_cnt] = (short)((path.velocity[path_cnt] * path.velocity[path_cnt]) / (2 * (float)accel));
-	                        } else {
-	                            path.velocity[path_cnt] = (short)sqrt((2.0 * (float)accel * SECTION_STRAIGHT * 0.25 * j)  + path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]);
-	                            path.decel_length[path_cnt] = (short)((path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2 * (float)accel));
-	                        }
-	                    } else if (accel_distance > (SECTION_STRAIGHT * (float)j * 0.25)) {
+							if (accel_distance > (SECTION_STRAIGHT * (float)j * 0.25)) {
+								path.velocity[path_cnt] = (short)sqrt(2.0 * (float)accel * SECTION_STRAIGHT * 0.25 * j);
+								path.decel_length[path_cnt] = (short)((path.velocity[path_cnt] * path.velocity[path_cnt]) / (2 * (float)accel));
+							} else {
+								path.decel_length[path_cnt] = (short)((path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2 * (float)accel));
+							}
+						} else if (accel_distance > (SECTION_STRAIGHT * (float)j * 0.25)) {
 							path.velocity[path_cnt] = (short)sqrt((2.0 * (float)accel * SECTION_STRAIGHT * 0.25 * j) + path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]);
 							path.decel_length[path_cnt] = (short)((path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2 * (float)accel));
 						} else {
@@ -2554,7 +2551,13 @@ namespace Mystat {
 		ExecuteFlag.SetValue(true);
 		PWM::Motor::Enable();
 
-		PWM::Motor::AccelDecel(SEARCH_SPEED, 3000.0, true);
+		if ((dest_x == START_X) && (dest_y == START_Y)){
+			PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, true);
+		} else {
+			Distance.SetValue(POSITION_BACKWALL_CORRECTION);
+			PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, false);
+		}
+
 		Mystat::Position::UpDate(SIDE_FORWARD);
 
 		while(!Status::CheckGoalArrival(dest_x, dest_y) && ExecuteFlag.GetValue()) {
@@ -2805,12 +2808,13 @@ namespace Mystat {
 						System::Timer::wait_ms(50);
 						PWM::Motor::BackAtBlindAllay();
 						System::Timer::wait_ms(50);
+						PWM::Motor::AccelDecel(SEARCH_SPEED, 4000.0, false);
 					} else {
 						PWM::Motor::Turning(true, 0);
 						System::Timer::wait_ms(50);
+						PWM::Motor::AccelDecel(SEARCH_SPEED, 4000.0, true);
 					}
 
-					PWM::Motor::AccelDecel(SEARCH_SPEED, 4000.0, false);
 					Mystat::Position::UpDate(SIDE_REAR);
 					break;
 			}

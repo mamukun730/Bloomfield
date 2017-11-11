@@ -62,7 +62,6 @@ extern "C" void __main()
 #endif 
 
 int main(void) {
-	char senddata[127];
 	log_cnt = 0;
 
 	System::SetUp::Clock();
@@ -93,26 +92,27 @@ int main(void) {
 				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, true, false);
 
 				if (ExecuteFlag.GetValue()) {
-					Mystat::Map::Search_Adachi(START_X, START_Y, false, true, true);
+					Mystat::Map::Search_Adachi(START_X, START_Y, true, true, false);
 				}
 				break;
 
 			case 2:
-				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, true, true);
+				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, true, true, false);
 				break;
 
 			case 3:
 //				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, false, false);
 //				Mystat::Map::SendData();
-				Mystat::Map::MakePath(480, 320, 320, 3000);
-				Mystat::Map::ReadPath(480, 320, 320, 3000);
+				Mystat::Map::MakePath(480, 300, 300, 3000);
+				Mystat::Map::ReadPath(480, 300, 300, 3000);
 				break;
 
 			case 4:
 //				PWM::Motor::TestSlalom(false);
-//				PWM::Motor::TestDetectEdge(false, SLALOM_RIGHT);
-				Mystat::Map::MakePath(640, 320, 320, 3000);
-				Mystat::Map::ReadPath(640, 320, 320, 3000);
+//				PWM::Motor::TestDetectEdge(false, SLALOM_LEFT);
+//				PWM::Motor::TestWheelDiameter();
+				Mystat::Map::MakePath(640, 300, 480, 4500);
+				Mystat::Map::ReadPath(640, 300, 480, 4500);
 
 //				while(1) {
 //					sprintf(senddata, "%4d, %4d, %4d, %4d, %4d, %4d, %4d\n", Status::Sensor::GetValue(Status::Sensor::LS, false), Status::Sensor::GetValue(Status::Sensor::LC, false), Status::Sensor::GetValue(Status::Sensor::LF, false), Status::Sensor::GetValue(Status::Sensor::F, false), Status::Sensor::GetValue(Status::Sensor::RF, false), Status::Sensor::GetValue(Status::Sensor::RC, false), Status::Sensor::GetValue(Status::Sensor::RS, false));
@@ -128,46 +128,14 @@ int main(void) {
 				} else {
 					System::Interface::SetLEDColor(0, 255, 0, 0);
 				}
+				break;
 
 			default:
 				break;
 		}
 
-//		while(SW_NEXT == 1);
-//		System::Interface::SetLEDColor(0, 0, 0, 255);
-//		System::Timer::wait_ms(2000);
-//		Status::Calc::SetGyroReference();
-//		System::Timer::wait_ms(1000);
-//
-//		ExecuteFlag.SetValue(true);
-//		PWM::Motor::Enable();
-//		PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, false);
-//	//	PWM::Motor::Run(4, false);
-//		PWM::Motor::AccelDecel(0.0, -SEARCH_ACCEL, false);
-//	//	PWM::Motor::AccelDecel(480.0, 4000.0, true);
-//	//	PWM::Motor::Slalom(3, SLALOM_LEFT);
-//	//	PWM::Motor::AccelRun(4, true, 480.0, 480.0, 0.0, 4000.0);
-//	//	System::Timer::wait_ms(1500);
-//		PWM::Motor::Disable();
-//		ExecuteFlag.SetValue(false);
-//		System::Timer::wait_ms(1000);
-//
-//		while(SW_NEXT == 1);
-//		System::Interface::SetLEDColor(0, 0, 255, 0);
-//		for (uint16_t cnt = 0; cnt < LOGSIZE; cnt++) {
-//			sprintf(senddata, "%d, %d, %d, %d, %f, %f, %f, %f\n",
-//					log_sen_ls[cnt], log_sen_lc[cnt], log_sen_rc[cnt], log_sen_rs[cnt],
-//					log_v_target[cnt], log_v_actual[cnt], log_a_v_target[cnt], log_a_v_actual[cnt]);
-//			System::SCI::SendChar(senddata);
-//		}
-
-		ExecuteFlag.SetValue(false);
-
-		System::Timer::wait_ms(1000);
-		System::Interface::SetLEDColor(0, 0, 0, 0);
-
 		while(SW_NEXT == 1);
-	}
+}
 
 	return 0;
 }
