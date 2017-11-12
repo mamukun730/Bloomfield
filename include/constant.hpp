@@ -101,13 +101,13 @@ const static float POSITION_EDGE_DETECT_F_R			= 62.0;
 const static float POSITION_POLE_DETECT_F_L			= 67.0;
 const static float POSITION_POLE_DETECT_F_R			= 62.0;
 
-const static float POSITION_EDGE_DETECT_SH_L		= 43.0;
-const static float POSITION_EDGE_DETECT_SH_R		= 40.0;
+const static float POSITION_EDGE_DETECT_SH_L		= 40.0;
+const static float POSITION_EDGE_DETECT_SH_R		= 44.0;
 const static float POSITION_POLE_DETECT_SH_L		= 45.0;
-const static float POSITION_POLE_DETECT_SH_R		= 42.0;
+const static float POSITION_POLE_DETECT_SH_R		= 49.0;
 
-const static float POSITION_EDGE_DETECT_SL_L		= SECTION_SLANT - 9.0;
-const static float POSITION_EDGE_DETECT_SL_R		= SECTION_SLANT - 9.0;
+const static float POSITION_EDGE_DETECT_SL_L		= SECTION_SLANT - 0.5;
+const static float POSITION_EDGE_DETECT_SL_R		= SECTION_SLANT - 0.5;
 const static float POSITION_BACKWALL_CORRECTION		= 25.86;
 
 // ADC
@@ -119,7 +119,7 @@ const static uint16_t ADC_WALLSENSOR_P2				= 0x114;			// 0B 01 0001 0100
 // Sensor
 const static float GAIN_P_WALL						= 0.100;
 const static float GAIN_P_WALL_SH					= 0.065;
-const static float GAIN_P_WALL_SLANT				= 0.200;
+const static float GAIN_P_WALL_SLANT				= 0.150;
 const static float CTRL_WALL_LIMIT					= 720.0;			// deg/s
 
 const static uint8_t SENSOR_AMOUNT					= 7;

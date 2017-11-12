@@ -118,8 +118,8 @@ int main(void) {
 				break;
 
 			case 6:
-				Mystat::Map::MakePath(1000, 400, 750, 4500, 2500);
-				Mystat::Map::ReadPath(1000, 400, 750, 4500, 2500);
+				Mystat::Map::MakePath(1200, 400, 900, 4500, 2500);
+				Mystat::Map::ReadPath(1200, 400, 900, 4500, 2500);
 
 //				PWM::Motor::TestSlalom(false);
 //				PWM::Motor::TestDetectEdge(false, SLALOM_LEFT);
