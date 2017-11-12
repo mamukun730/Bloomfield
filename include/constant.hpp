@@ -34,8 +34,8 @@ const static float GEAR_RATIO						= 1.0000;
 const static float WHEEL_D							= 14.100;			// ホイール径 [mm]
 const static uint32_t SLIP_RATE						= 16000;			// スリップ定数 [mm/s2]
 
-const static uint8_t MODE_NUMBER					= 5;
-const static uint8_t NUMBER_SLALOM_PARAM			= (7 * 1);
+const static uint8_t MODE_NUMBER					= 7;
+const static uint8_t NUMBER_SLALOM_PARAM			= (7 * 2);
 const static uint16_t WAITING_SENSORSTART			= 100;
 
 const static float SEARCH_SPEED						= 240.0;
@@ -96,10 +96,10 @@ const static int8_t SLALOM_LEFT						= 1;
 
 // 壁切れ読み取り位置
 // 探索中は横センサ利用, 最短中は中横センサ利用
-const static float POSITION_EDGE_DETECT_F_L			= 65.0;
-const static float POSITION_EDGE_DETECT_F_R			= 60.0;
-const static float POSITION_POLE_DETECT_F_L			= 65.0;
-const static float POSITION_POLE_DETECT_F_R			= 60.0;
+const static float POSITION_EDGE_DETECT_F_L			= 67.0;
+const static float POSITION_EDGE_DETECT_F_R			= 62.0;
+const static float POSITION_POLE_DETECT_F_L			= 67.0;
+const static float POSITION_POLE_DETECT_F_R			= 62.0;
 
 const static float POSITION_EDGE_DETECT_SH_L		= 43.0;
 const static float POSITION_EDGE_DETECT_SH_R		= 40.0;
@@ -117,8 +117,9 @@ const static uint16_t ADC_WALLSENSOR_P2				= 0x114;			// 0B 01 0001 0100
 //																		   Ch 98 7654 3210
 
 // Sensor
-const static float GAIN_P_WALL						= 0.075;
-const static float GAIN_P_WALL_SH					= 0.075;
+const static float GAIN_P_WALL						= 0.100;
+const static float GAIN_P_WALL_SH					= 0.065;
+const static float GAIN_P_WALL_SLANT				= 0.200;
 const static float CTRL_WALL_LIMIT					= 720.0;			// deg/s
 
 const static uint8_t SENSOR_AMOUNT					= 7;
@@ -129,8 +130,8 @@ const static uint16_t SENSOR_TARGET_R				= 400;
 
 const static uint16_t SENSOR_CTRL_THRESHOLD_L		= 260;				// 壁制御閾値
 const static uint16_t SENSOR_CTRL_THRESHOLD_R		= 260;
-const static uint16_t SENSOR_CTRL_THRESHOLD_LC		= 800;
-const static uint16_t SENSOR_CTRL_THRESHOLD_RC		= 800;
+const static uint16_t SENSOR_CTRL_THRESHOLD_LC		= 650;
+const static uint16_t SENSOR_CTRL_THRESHOLD_RC		= 650;
 
 const static uint16_t SENSOR_DIFF_THRESHOLD			= 5;
 
@@ -140,14 +141,14 @@ const static uint16_t SENSOR_WALL_EXIST_R			= 120;
 
 const static uint16_t SENSOR_WALL_EXIST_F_NEAR		= 200;
 
-const static uint16_t WALL_EDGE_THRESHOLD_SE_LS		= 312;				// 壁切れ監視閾値(探索) 0.80Ref
-const static uint16_t WALL_EDGE_THRESHOLD_SE_RS		= 320;
+const static uint16_t WALL_EDGE_THRESHOLD_SE_LS		= 254;				// 壁切れ監視閾値(探索) 0.65Ref
+const static uint16_t WALL_EDGE_THRESHOLD_SE_RS		= 260;
 
 const static uint16_t WALL_EDGE_THRESHOLD_SH_LS		= 176;				// 壁切れ監視閾値(最短) 0.45Ref
 const static uint16_t WALL_EDGE_THRESHOLD_SH_RS		= 180;
 
-const static uint16_t WALL_EDGE_THRESHOLD2_F_LS		= 300;				// 壁切れ
-const static uint16_t WALL_EDGE_THRESHOLD2_F_RS		= 300;
+const static uint16_t WALL_EDGE_THRESHOLD2_F_LS		= 245;				// 壁切れ
+const static uint16_t WALL_EDGE_THRESHOLD2_F_RS		= 245;
 const static uint16_t WALL_EDGE_THRESHOLD2_F_LC		= 130;
 const static uint16_t WALL_EDGE_THRESHOLD2_F_RC		= 160;
 

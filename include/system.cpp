@@ -817,7 +817,7 @@ namespace System {
 				mode--;
 			}
 
-			if ((Status::Calc::ZAccelOutToMetric() < (-0.5 * GRAVITY_METRIC)) && (Status::Calc::GyroOutToA_Velocity_Y() < 180.0) && (Status::Calc::GyroOutToA_Velocity_Y() > -180.0)) {
+			if ((Status::Calc::ZAccelOutToMetric() < (-0.25 * GRAVITY_METRIC)) && (Status::Calc::GyroOutToA_Velocity_Y() < 180.0) && (Status::Calc::GyroOutToA_Velocity_Y() > -180.0)) {
 				break;
 			}
 
@@ -831,23 +831,31 @@ namespace System {
 
 			switch (mode) {
 				case 1:
-					Interface::SetLEDColor(0, 255, 0, 0);
+					Interface::SetLEDColor(0, 255, 0, 0);		// Red
 					break;
 
 				case 2:
-					Interface::SetLEDColor(0, 0, 255, 0);
+					Interface::SetLEDColor(0, 0, 255, 0);		// Green
 					break;
 
 				case 3:
-					Interface::SetLEDColor(0, 0, 0, 255);
+					Interface::SetLEDColor(0, 0, 0, 255);		// Blue
 					break;
 
 				case 4:
-					Interface::SetLEDColor(0, 255, 255, 0);
+					Interface::SetLEDColor(0, 255, 255, 0);		// Yellow
 					break;
 
 				case 5:
-					Interface::SetLEDColor(0, 255, 0, 255);
+					Interface::SetLEDColor(0, 255, 0, 255);		// Purple
+					break;
+
+				case 6:
+					Interface::SetLEDColor(0, 255, 140, 0);		// Orange
+					break;
+
+				case 7:
+					Interface::SetLEDColor(0, 255, 255, 255);	// White
 					break;
 
 				default:

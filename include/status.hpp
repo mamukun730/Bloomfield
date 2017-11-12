@@ -160,8 +160,8 @@ namespace Mystat {
 			static void CheckDijikstra_Vertical(unsigned char check_x, unsigned char check_y);
 			static void CheckDijikstra_Horizontal(unsigned char check_x, unsigned char check_y);
 			static void Dijkstra(void);
-			static void MakePath(unsigned int velocity, unsigned int turn_velocity, unsigned int slant_velocity, unsigned int accel);
-			static void ReadPath(unsigned int velocity, unsigned int turn_velocity, unsigned int slant_velocity, unsigned int accel);
+			static void MakePath(unsigned int velocity, unsigned int turn_velocity, unsigned int slant_velocity, unsigned int accel, unsigned int slant_accel);
+			static void ReadPath(unsigned int velocity, unsigned int turn_velocity, unsigned int slant_velocity, unsigned int accel, unsigned int slant_accel);
     };
 }
 

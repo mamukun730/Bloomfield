@@ -90,8 +90,10 @@ namespace Status {
 				wall_bothside = false, start = false;
 
 		if ((distance >= 25.0) && (distance <= 65.0) && !start) {
-			if ((Status::Sensor::GetValue(Status::Sensor::LS, false) > WALL_EDGE_THRESHOLD_SE_LS)
-					&& (Status::Sensor::GetValue(Status::Sensor::RS, false) > WALL_EDGE_THRESHOLD_SE_RS)) {
+			if (Status::Sensor::GetValue(Status::Sensor::F, false) > SENSOR_WALL_EXIST_F_NEAR) {		// 袋小路で時々壁切れモードに入るのなんで
+				wall_bothside = false;
+			} else if ((Status::Sensor::GetValue(Status::Sensor::LS, false) > SENSOR_WALL_EXIST_L)
+					&& (Status::Sensor::GetValue(Status::Sensor::RS, false) > SENSOR_WALL_EXIST_R)) {
 				wall_bothside = true;
 			} else {
 				wall_bothside = false;
@@ -2068,7 +2070,7 @@ namespace Mystat {
 		}
 	}
 
-	void Map::MakePath (unsigned int velocity, unsigned int turn_velocity, unsigned int slant_velocity, unsigned int accel) {
+	void Map::MakePath (unsigned int velocity, unsigned int turn_velocity, unsigned int slant_velocity, unsigned int accel, unsigned int slant_accel) {
 		unsigned char check_x = 0, check_y = 1, next_x = 0, next_y = 0;
 		unsigned int path_cnt = 1, path_long = 0;
 		char senddata[127];
@@ -2289,7 +2291,7 @@ namespace Mystat {
 	    path.length++;
 	}
 
-	void Map::ReadPath(unsigned int velocity, unsigned int turn_velocity, unsigned int slant_velocity, unsigned int accel) {
+	void Map::ReadPath(unsigned int velocity, unsigned int turn_velocity, unsigned int slant_velocity, unsigned int accel, unsigned int slant_accel) {
 		unsigned int path_cnt;
 		unsigned char i = 0, j = 0, turnparam = 0, turnparam_num = 0, prev_mode = 255;
 		signed char path_dir;
@@ -2297,6 +2299,14 @@ namespace Mystat {
 		bool failed = false, straight_first = false;
 
 		switch (turn_velocity) {
+			case 300:
+				turnparam_num = 0;
+				break;
+
+			case 400:
+				turnparam_num = 1;
+				break;
+
 			default:
 				turnparam_num = 0;
 				break;
@@ -2412,11 +2422,11 @@ namespace Mystat {
 						}
 
 						path.velocity_next[path_cnt] = path.velocity[path_cnt + i + 1];
-						accel_distance = ((float)(path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2 * (float)accel));
+						accel_distance = ((float)(path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2 * (float)slant_accel));
 
 						if (accel_distance > (SECTION_SLANT * (float)(i + 1) * 0.5)) {
 							path.velocity[path_cnt] = (short)sqrt((2 * (float)accel * SECTION_SLANT * 0.5 * (i + 1)) + path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]);
-							path.decel_length[path_cnt] = (short)((path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2 * (float)accel));
+							path.decel_length[path_cnt] = (short)((path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2 * (float)slant_accel));
 						} else {
 							path.decel_length[path_cnt] = (short)accel_distance;
 						}
@@ -2506,7 +2516,7 @@ namespace Mystat {
 						break;
 
 					case 100:	// 斜め中直進
-						PWM::Motor::AccelRun(path.section[path_cnt], true, path.velocity[path_cnt], path.velocity_next[path_cnt], path.decel_length[path_cnt], (float)accel);
+						PWM::Motor::AccelRun(path.section[path_cnt], true, path.velocity[path_cnt], path.velocity_next[path_cnt], path.decel_length[path_cnt], (float)slant_accel);
 
 						if (!straight_first) {
 							turnparam = turnparam_num;
@@ -2841,7 +2851,7 @@ namespace Mystat {
 			wall_l = Status::Sensor::CheckWallExist(SIDE_LEFT);
 			wall_f  = Status::Sensor::CheckWallExist(SIDE_FORWARD);
 
-			PWM::Motor::AccelDecel(0.0, -14000.0, true);
+			PWM::Motor::AccelDecel(0.0, -SEARCH_ACCEL, true);
 			System::Timer::wait_ms(10);
 			Status::Reset();
 			PWM::Motor::Disable();

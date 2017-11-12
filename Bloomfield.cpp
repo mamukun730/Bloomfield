@@ -103,25 +103,37 @@ int main(void) {
 			case 3:
 //				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, false, false);
 //				Mystat::Map::SendData();
-				Mystat::Map::MakePath(480, 300, 300, 3000);
-				Mystat::Map::ReadPath(480, 300, 300, 3000);
+				Mystat::Map::MakePath(500, 300, 300, 3000, 2500);
+				Mystat::Map::ReadPath(500, 300, 300, 3000, 2500);
 				break;
 
 			case 4:
+				Mystat::Map::MakePath(700, 300, 500, 4500, 2500);
+				Mystat::Map::ReadPath(700, 300, 500, 4500, 2500);
+				break;
+
+			case 5:
+				Mystat::Map::MakePath(1000, 300, 750, 4500, 2500);
+				Mystat::Map::ReadPath(1000, 300, 750, 4500, 2500);
+				break;
+
+			case 6:
+				Mystat::Map::MakePath(1000, 400, 750, 4500, 2500);
+				Mystat::Map::ReadPath(1000, 400, 750, 4500, 2500);
+
 //				PWM::Motor::TestSlalom(false);
 //				PWM::Motor::TestDetectEdge(false, SLALOM_LEFT);
 //				PWM::Motor::TestWheelDiameter();
-				Mystat::Map::MakePath(640, 300, 480, 4500);
-				Mystat::Map::ReadPath(640, 300, 480, 4500);
 
 //				while(1) {
 //					sprintf(senddata, "%4d, %4d, %4d, %4d, %4d, %4d, %4d\n", Status::Sensor::GetValue(Status::Sensor::LS, false), Status::Sensor::GetValue(Status::Sensor::LC, false), Status::Sensor::GetValue(Status::Sensor::LF, false), Status::Sensor::GetValue(Status::Sensor::F, false), Status::Sensor::GetValue(Status::Sensor::RF, false), Status::Sensor::GetValue(Status::Sensor::RC, false), Status::Sensor::GetValue(Status::Sensor::RS, false));
 //					System::SCI::SendChar(senddata);
 //					System::Timer::wait_ms(1000);
 //				}
+
 				break;
 
-			case 5:
+			case 7:
 				if (System::Flash::EraseBlock(BLOCK_DB0)) {
 					Mystat::Map::Init();
 					System::Interface::SetLEDColor(0, 0, 255, 0);
@@ -134,6 +146,8 @@ int main(void) {
 				break;
 		}
 
+		System::Interface::SetLEDColor(0, 0, 0, 0);
+		System::Interface::SetLEDColor(1, 0, 0, 0);
 		while(SW_NEXT == 1);
 }
 
