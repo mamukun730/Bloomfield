@@ -232,7 +232,7 @@ namespace System {
 			// Map
 			if (R_FlashDataAreaBlankCheck(BLOCK_DB0, BLANK_CHECK_ENTIRE_BLOCK) == FLASH_NOT_BLANK) {
 				operation = Flash::ReadWallData();
-				Mystat::Map::CalcStep(GOAL_X, GOAL_Y, false);
+				Mystat::Map::CalcStep(GOAL_X, GOAL_Y, false, false);
 
 				sprintf(senddata, "MapInfoOnFlash:\t\tYes\n");
 				SCI::SendChar(senddata);

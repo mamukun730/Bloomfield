@@ -35,7 +35,7 @@ const static float WHEEL_D							= 14.100;			// ホイール径 [mm]
 const static uint32_t SLIP_RATE						= 16000;			// スリップ定数 [mm/s2]
 
 const static uint8_t MODE_NUMBER					= 7;
-const static uint8_t NUMBER_SLALOM_PARAM			= (7 * 2);
+const static uint8_t NUMBER_SLALOM_PARAM			= (7 * 3);
 const static uint16_t WAITING_SENSORSTART			= 100;
 
 const static float SEARCH_SPEED						= 240.0;

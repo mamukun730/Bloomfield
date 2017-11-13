@@ -138,7 +138,7 @@ namespace Mystat {
         public:
             static void Init();
 
-            static void CalcStep(unsigned char dest_x, unsigned char dest_y, bool enable_neglect);
+            static void CalcStep(unsigned char dest_x, unsigned char dest_y, bool enable_neglect, bool searched_element);
 			static float CalcAccelStep(bool slant, unsigned char partition);
 
             static bool CheckAheadWallExist(unsigned char x, unsigned char y, signed char side);

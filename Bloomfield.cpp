@@ -89,15 +89,15 @@ int main(void) {
 
 		switch (System::Interface::GetExecuteMode()) {
 			case 1:
-				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, true, false);
+				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, false, false);
 
 				if (ExecuteFlag.GetValue()) {
-					Mystat::Map::Search_Adachi(START_X, START_Y, true, true, false);
+					Mystat::Map::Search_Adachi(START_X, START_Y, false, true, false);
 				}
 				break;
 
 			case 2:
-				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, true, true, false);
+				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, true, false, false);
 				break;
 
 			case 3:
@@ -113,13 +113,13 @@ int main(void) {
 				break;
 
 			case 5:
-				Mystat::Map::MakePath(1000, 300, 750, 4500, 2500);
-				Mystat::Map::ReadPath(1000, 300, 750, 4500, 2500);
+				Mystat::Map::MakePath(1200, 400, 900, 4500, 2500);
+				Mystat::Map::ReadPath(1200, 400, 900, 4500, 2500);
 				break;
 
 			case 6:
-				Mystat::Map::MakePath(1200, 400, 900, 4500, 2500);
-				Mystat::Map::ReadPath(1200, 400, 900, 4500, 2500);
+				Mystat::Map::MakePath(1500, 500,1200, 4500, 2500);
+				Mystat::Map::ReadPath(1500, 500,1200, 4500, 2500);
 
 //				PWM::Motor::TestSlalom(false);
 //				PWM::Motor::TestDetectEdge(false, SLALOM_LEFT);

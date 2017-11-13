@@ -671,28 +671,28 @@ namespace Mystat {
 
 				// 迷路外縁部には壁を入れる
 				if (cnt_x == 0) {
-					data[cnt_x][cnt_y] |= WALL_WEST;
+					data[cnt_x][cnt_y] |= (FLAG_WEST | WALL_WEST);
 				}
 
 				if (cnt_x == (MAPSIZE_X - 1)) {
-					data[cnt_x][cnt_y] |= WALL_EAST;
+					data[cnt_x][cnt_y] |= (FLAG_EAST | WALL_EAST);
 				}
 
 				if (cnt_y == 0) {
-					data[cnt_x][cnt_y] |= WALL_SOUTH;
+					data[cnt_x][cnt_y] |= (FLAG_SOUTH | WALL_SOUTH);
 				}
 
 				if (cnt_y == (MAPSIZE_Y - 1)) {
-					data[cnt_x][cnt_y] |= WALL_NORTH;
+					data[cnt_x][cnt_y] |= (FLAG_NORTH | WALL_NORTH);
 				}
 			}
 		}
 
 		step[GOAL_X][GOAL_Y]		= 0;
-		checked[START_X][START_Y]   = true;
-		data[START_X][START_Y]	  |= (FLAG_EAST | FLAG_NORTH | WALL_EAST);	// 0x98
-		data[START_X][START_Y + 1]  |= FLAG_SOUTH;							  // 0x20
-		data[START_X + 1][START_Y]  |= (FLAG_WEST | WALL_WEST);				 // 0x44
+		checked[START_X][START_Y]	= true;
+		data[START_X][START_Y]		|= (FLAG_EAST | FLAG_NORTH | WALL_EAST);	// 0x98
+		data[START_X][START_Y + 1]	|= FLAG_SOUTH;							  // 0x20
+		data[START_X + 1][START_Y]	|= (FLAG_WEST | WALL_WEST);				 // 0x44
 
 		if (ENABLE_FULLGOAL) {
 			data[GOAL_X][GOAL_Y]		|= (FLAG_NORTH | FLAG_EAST);
@@ -731,66 +731,81 @@ namespace Mystat {
 		}
 	}
 
-	void Map::CalcStep (unsigned char dest_x, unsigned char dest_y, bool enable_neglect) {
+	void Map::CalcStep (unsigned char dest_x, unsigned char dest_y, bool enable_neglect, bool search_all) {
 		unsigned char searched_x[257], searched_y[257], wallcnt;
-		bool search_flag = 1, none_refresh = 1;
+		bool search_flag = true, none_refresh = true;
 		unsigned char cnt_next_contour = 0, cnt_before_contour = 0;
 		unsigned int cnt_contour = 0, searched_element = 0;
 		unsigned char now_step = 0, cnt_judgechecked = 0;
-
-		for (unsigned char i = 0; i < MAPSIZE_X; i++) {
-			for (unsigned char j = 0; j < MAPSIZE_Y; j++) {
-				step[i][j] = 255;
-				wallcnt = 0;
-
-				if ((i < (MAPSIZE_X - 1)) && (j < (MAPSIZE_Y - 1))) {
-					if ((data[i][j] & (FLAG_EAST | WALL_EAST)) == FLAG_EAST) {
-						wallcnt++;
-					}
-
-					if ((data[i][j + 1] & (FLAG_EAST | WALL_EAST)) == FLAG_EAST) {
-						wallcnt++;
-					}
-
-					if ((data[i][j] & (FLAG_NORTH | WALL_NORTH)) == FLAG_NORTH) {
-						wallcnt++;
-					}
-
-					if ((data[i + 1][j] & (FLAG_NORTH | WALL_NORTH)) == FLAG_NORTH) {
-						wallcnt++;
-					}
-
-					if ((wallcnt == 3) && ((i != GOAL_X) || (j != GOAL_Y))) {
-					//if (wallcnt == 3) {
-						if (!(data[i][j] & FLAG_EAST)) {
-							data[i][j] |= WALL_EAST;
-							data[i + 1][j] |= WALL_WEST;
-						}
-
-						if (!(data[i][j + 1] & FLAG_EAST)) {
-							data[i][j + 1] |= WALL_EAST;
-							data[i + 1][j + 1] |= WALL_WEST;
-						}
-
-						if (!(data[i][j] & FLAG_NORTH)) {
-							data[i][j] |= WALL_NORTH;
-							data[i][j + 1] |= WALL_SOUTH;
-						}
-
-						if (!(data[i + 1][j] & FLAG_NORTH)) {
-							data[i + 1][j] |= WALL_NORTH;
-							data[i + 1][j + 1] |= WALL_SOUTH;
-						}
-					}
-				}
-			}
-		}
 
 		step[dest_x][dest_y] = 0;
 
 		searched_x[0] = dest_x;
 		searched_y[0] = dest_y;
 		now_step++;
+
+		for (unsigned char i = 0; i < MAPSIZE_X; i++) {
+			for (unsigned char j = 0; j < MAPSIZE_Y; j++) {
+				if ((i == dest_x) && (j == dest_y)) {
+					// skip
+				} else {
+					step[i][j] = 255;
+					wallcnt = 0;
+
+					if ((i < (MAPSIZE_X - 1)) && (j < (MAPSIZE_Y - 1))) {
+						if ((data[i][j] & (FLAG_EAST | WALL_EAST)) == FLAG_EAST) {
+							wallcnt++;
+						}
+
+						if ((data[i][j + 1] & (FLAG_EAST | WALL_EAST)) == FLAG_EAST) {
+							wallcnt++;
+						}
+
+						if ((data[i][j] & (FLAG_NORTH | WALL_NORTH)) == FLAG_NORTH) {
+							wallcnt++;
+						}
+
+						if ((data[i + 1][j] & (FLAG_NORTH | WALL_NORTH)) == FLAG_NORTH) {
+							wallcnt++;
+						}
+
+						if ((wallcnt == 3) && ((i != GOAL_X) || (j != GOAL_Y))) {
+						//if (wallcnt == 3) {
+							if (!(data[i][j] & FLAG_EAST)) {
+								data[i][j] |= (FLAG_EAST | WALL_EAST);
+								data[i + 1][j] |= (FLAG_WEST | WALL_WEST);
+							}
+
+							if (!(data[i][j + 1] & FLAG_EAST)) {
+								data[i][j + 1] |= (FLAG_EAST | WALL_EAST);
+								data[i + 1][j + 1] |= (FLAG_WEST | WALL_WEST);
+							}
+
+							if (!(data[i][j] & FLAG_NORTH)) {
+								data[i][j] |= (FLAG_NORTH | WALL_NORTH);
+								data[i][j + 1] |= (FLAG_SOUTH | WALL_SOUTH);
+							}
+
+							if (!(data[i + 1][j] & FLAG_NORTH)) {
+								data[i + 1][j] |= (FLAG_NORTH | WALL_NORTH);
+								data[i + 1][j + 1] |= (FLAG_SOUTH | WALL_SOUTH);
+							}
+						}
+					}
+				}
+
+				// 全て壁チェック済みなら既知区間扱い
+				if ((data[i][j] & 0xf0) == 0xf0) {
+					checked[i][j] = true;
+				} else if (search_all) {
+					searched_element++;
+					cnt_before_contour++;
+					searched_x[searched_element] = i;
+					searched_y[searched_element] = j;
+					step[i][j] = 0;
+				}
+			}
+		}
 
 		while (search_flag) {
 			for (cnt_contour = (searched_element - cnt_before_contour); cnt_contour <= searched_element; cnt_contour++) {
@@ -872,8 +887,8 @@ namespace Mystat {
 									MX
 							 */
 							if ((data[searched_x[cnt_contour] + 1][searched_y[cnt_contour]] & (FLAG_NORTH | WALL_NORTH)) == FLAG_NORTH) {
-								data[searched_x[cnt_contour]][searched_y[cnt_contour] + 1] |=	   (FLAG_EAST | WALL_EAST);
-								data[searched_x[cnt_contour] + 1][searched_y[cnt_contour] + 1] |=   (FLAG_WEST | WALL_WEST);
+								data[searched_x[cnt_contour]][searched_y[cnt_contour] + 1] |=		(FLAG_EAST | WALL_EAST);
+								data[searched_x[cnt_contour] + 1][searched_y[cnt_contour] + 1] |=	(FLAG_WEST | WALL_WEST);
 							}
 
 							/*  Pattern2: 北東柱-東側だけ壁
@@ -882,8 +897,8 @@ namespace Mystat {
 									MX
 							 */
 							if ((data[searched_x[cnt_contour]][searched_y[cnt_contour] + 1] & (FLAG_EAST | WALL_EAST)) == FLAG_EAST) {
-								data[searched_x[cnt_contour] + 1][searched_y[cnt_contour]] |=	   (FLAG_NORTH | WALL_NORTH);
-								data[searched_x[cnt_contour] + 1][searched_y[cnt_contour] + 1] |=   (FLAG_SOUTH | WALL_SOUTH);
+								data[searched_x[cnt_contour] + 1][searched_y[cnt_contour]] |=		(FLAG_NORTH | WALL_NORTH);
+								data[searched_x[cnt_contour] + 1][searched_y[cnt_contour] + 1] |=	(FLAG_SOUTH | WALL_SOUTH);
 							}
 						}
 					}
@@ -897,8 +912,8 @@ namespace Mystat {
 									 O
 							 */
 							if ((data[searched_x[cnt_contour] + 1][searched_y[cnt_contour] - 1] & (FLAG_NORTH | WALL_NORTH)) == FLAG_NORTH) {
-								data[searched_x[cnt_contour]][searched_y[cnt_contour] - 1] |=	   (FLAG_EAST | WALL_EAST);
-								data[searched_x[cnt_contour] + 1][searched_y[cnt_contour] - 1] |=   (FLAG_WEST | WALL_WEST);
+								data[searched_x[cnt_contour]][searched_y[cnt_contour] - 1] |=		(FLAG_EAST | WALL_EAST);
+								data[searched_x[cnt_contour] + 1][searched_y[cnt_contour] - 1] |=	(FLAG_WEST | WALL_WEST);
 							}
 
 							/*  Pattern4: 南東柱-東側だけ壁
@@ -907,8 +922,8 @@ namespace Mystat {
 									 X
 							 */
 							if ((data[searched_x[cnt_contour]][searched_y[cnt_contour] - 1] & (FLAG_EAST | WALL_EAST)) == FLAG_EAST) {
-								data[searched_x[cnt_contour] + 1][searched_y[cnt_contour] - 1] |=   (FLAG_NORTH | WALL_NORTH);
-								data[searched_x[cnt_contour] + 1][searched_y[cnt_contour]] |=	   (FLAG_SOUTH | WALL_SOUTH);
+								data[searched_x[cnt_contour] + 1][searched_y[cnt_contour] - 1] |=	(FLAG_NORTH | WALL_NORTH);
+								data[searched_x[cnt_contour] + 1][searched_y[cnt_contour]] |=		(FLAG_SOUTH | WALL_SOUTH);
 							}
 						}
 					}
@@ -922,8 +937,8 @@ namespace Mystat {
 									 O
 							 */
 							if ((data[searched_x[cnt_contour] - 1][searched_y[cnt_contour] - 1] & (FLAG_NORTH | WALL_NORTH)) == FLAG_NORTH) {
-								data[searched_x[cnt_contour] - 1][searched_y[cnt_contour] - 1] |=   (FLAG_EAST | WALL_EAST);
-								data[searched_x[cnt_contour]][searched_y[cnt_contour] - 1] |=	   (FLAG_WEST | WALL_WEST);
+								data[searched_x[cnt_contour] - 1][searched_y[cnt_contour] - 1] |=	(FLAG_EAST | WALL_EAST);
+								data[searched_x[cnt_contour]][searched_y[cnt_contour] - 1] |=		(FLAG_WEST | WALL_WEST);
 							}
 
 							/*  Pattern6: 南西柱-西側だけ壁
@@ -932,8 +947,8 @@ namespace Mystat {
 									 X
 							 */
 							if ((data[searched_x[cnt_contour] - 1][searched_y[cnt_contour] - 1] & (FLAG_EAST | WALL_EAST)) == FLAG_EAST) {
-								data[searched_x[cnt_contour] - 1][searched_y[cnt_contour] - 1] |=   (FLAG_NORTH | WALL_NORTH);
-								data[searched_x[cnt_contour] - 1][searched_y[cnt_contour]] |=	   (FLAG_SOUTH | WALL_SOUTH);
+								data[searched_x[cnt_contour] - 1][searched_y[cnt_contour] - 1] |=	(FLAG_NORTH | WALL_NORTH);
+								data[searched_x[cnt_contour] - 1][searched_y[cnt_contour]] |=		(FLAG_SOUTH | WALL_SOUTH);
 							}
 						}
 					}
@@ -947,8 +962,8 @@ namespace Mystat {
 									 XM
 							 */
 							if ((data[searched_x[cnt_contour] - 1][searched_y[cnt_contour]] & (FLAG_NORTH | WALL_NORTH)) == FLAG_NORTH) {
-								data[searched_x[cnt_contour] - 1][searched_y[cnt_contour] + 1] |=   (FLAG_EAST | WALL_EAST);
-								data[searched_x[cnt_contour]][searched_y[cnt_contour] + 1] |=	   (FLAG_WEST | WALL_WEST);
+								data[searched_x[cnt_contour] - 1][searched_y[cnt_contour] + 1] |=	(FLAG_EAST | WALL_EAST);
+								data[searched_x[cnt_contour]][searched_y[cnt_contour] + 1] |=		(FLAG_WEST | WALL_WEST);
 							}
 
 							/*  Pattern8: 北西柱-東側だけ壁
@@ -957,15 +972,10 @@ namespace Mystat {
 									 XM
 							 */
 							if ((data[searched_x[cnt_contour] - 1][searched_y[cnt_contour] + 1] & (FLAG_EAST | WALL_EAST)) == FLAG_EAST) {
-								data[searched_x[cnt_contour] - 1][searched_y[cnt_contour]] |=	   (FLAG_NORTH | WALL_NORTH);
-								data[searched_x[cnt_contour] - 1][searched_y[cnt_contour] + 1] |=   (FLAG_SOUTH | WALL_SOUTH);
+								data[searched_x[cnt_contour] - 1][searched_y[cnt_contour]] |=		(FLAG_NORTH | WALL_NORTH);
+								data[searched_x[cnt_contour] - 1][searched_y[cnt_contour] + 1] |=	(FLAG_SOUTH | WALL_SOUTH);
 							}
 						}
-					}
-
-					// 全て壁チェック済みなら既知区間扱い
-					if ((data[searched_x[cnt_contour]][searched_y[cnt_contour]] & 0xf0) == 0xf0) {
-//					  checked[searched_x[cnt_contour]][searched_y[cnt_contour]] = true;
 					}
 				}
 			}
@@ -2307,6 +2317,10 @@ namespace Mystat {
 				turnparam_num = 1;
 				break;
 
+			case 500:
+				turnparam_num = 2;
+				break;
+
 			default:
 				turnparam_num = 0;
 				break;
@@ -2548,7 +2562,7 @@ namespace Mystat {
 		}
 	}
 
-	void Map::Search_Adachi(unsigned char dest_x, unsigned char dest_y, bool f_method, bool slalom, bool shortcut) {
+	void Map::Search_Adachi(unsigned char dest_x, unsigned char dest_y, bool f_method, bool search_all, bool shortcut) {
 		bool wall_r = false, wall_l = false, wall_f = false, fast = false, next_known = false, expiration = false;
 		bool blockinfo_checked_forward, blockinfo_checked_left, blockinfo_checked_right, flag_goal = false, use_f_method = f_method;
 		signed char next_dir = 0;
@@ -2571,7 +2585,7 @@ namespace Mystat {
 		Mystat::Position::UpDate(SIDE_FORWARD);
 
 		while(!Status::CheckGoalArrival(dest_x, dest_y) && ExecuteFlag.GetValue()) {
-			Mystat::Map::CalcStep(dest_x, dest_y, false);
+			Mystat::Map::CalcStep(dest_x, dest_y, false, search_all);
 
 			now_x = Mystat::Position::Get(Mystat::Position::X);
 			now_y = Mystat::Position::Get(Mystat::Position::Y);
@@ -2756,12 +2770,12 @@ namespace Mystat {
 					  }
 
 					  if (fast && (Velocity.GetValue(false) < 250.0)) {
-						  PWM::Motor::AccelDecel(SEARCH_SPEED * 2.0, 4000.0, false);
+						  PWM::Motor::AccelDecel(SEARCH_SPEED * 1.5, 4000.0, false);
 					  } else if (!fast && (Velocity.GetValue(false) > 250.0)) {
 						  PWM::Motor::AccelDecel(SEARCH_SPEED, -4000.0, false);
 					  } else if (!fast && next_known) {
 						  Accel.SetValue(false, 4000.0);
-						  TargetVelocity.SetValue(SEARCH_SPEED * 1.5);
+						  TargetVelocity.SetValue(SEARCH_SPEED * 1.25);
 						  PWM::Motor::Run(0, true);
 
 						  Accel.SetValue(false, -4000.0);
@@ -2778,33 +2792,33 @@ namespace Mystat {
 				  break;
 
 				case SIDE_LEFT:
-					if (slalom) {
+//					if (slalom) {
 						PWM::Motor::Slalom(SLALOM_LEFT);
-					} else {
-						PWM::Motor::AccelDecel(0.0, -2000.0, true);
-
-						System::Timer::wait_ms(50);
-						PWM::Motor::Turning(false, SLALOM_LEFT);
-						System::Timer::wait_ms(50);
-
-						PWM::Motor::AccelDecel(SEARCH_SPEED, 4000.0, true);
-					}
+//					} else {
+//						PWM::Motor::AccelDecel(0.0, -2000.0, true);
+//
+//						System::Timer::wait_ms(50);
+//						PWM::Motor::Turning(false, SLALOM_LEFT);
+//						System::Timer::wait_ms(50);
+//
+//						PWM::Motor::AccelDecel(SEARCH_SPEED, 4000.0, true);
+//					}
 
 					Mystat::Position::UpDate(SIDE_LEFT);
 					break;
 
 				case SIDE_RIGHT:
-					if (slalom) {
+//					if (slalom) {
 						PWM::Motor::Slalom(SLALOM_RIGHT);
-					} else {
-						PWM::Motor::AccelDecel(0.0, -2000.0, true);
-
-						System::Timer::wait_ms(50);
-						PWM::Motor::Turning(false, SLALOM_RIGHT);
-						System::Timer::wait_ms(50);
-
-						PWM::Motor::AccelDecel(SEARCH_SPEED, 4000.0, true);
-					}
+//					} else {
+//						PWM::Motor::AccelDecel(0.0, -2000.0, true);
+//
+//						System::Timer::wait_ms(50);
+//						PWM::Motor::Turning(false, SLALOM_RIGHT);
+//						System::Timer::wait_ms(50);
+//
+//						PWM::Motor::AccelDecel(SEARCH_SPEED, 4000.0, true);
+//					}
 
 					Mystat::Position::UpDate(SIDE_RIGHT);
 					break;
