@@ -76,10 +76,121 @@ int main(void) {
 	System::SetUp::StartCheck();
 
 	PWM::Buzzer::Melody_M_Coin();
-//	PWM::Buzzer::Melody_FoxMovie();
+
+	System::Timer::wait_ms(3000);
+
+	// AutoStartMode
+	if (SW_NEXT == 0) {
+		System::Interface::ModeSelect(true);
+		System::Interface::SetLEDColor(0, 0, 255, 0);
+		PWM::Buzzer::Melody_GK8_1();
+		System::Interface::SetLEDColor(0, 0, 0, 0);
+
+		System::Timer::wait_ms(1000);
+		Mystat::Position::Reset();
+
+		// 1st
+		Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, false, false);
+
+		if (ExecuteFlag.GetValue()) {
+			Mystat::Map::Search_Adachi(START_X, START_Y, false, true, false);
+		}
+
+		// 2nd
+		if (ExecuteFlag.GetValue()) {
+			PWM::Motor::Enable();
+			System::Timer::wait_ms(50);
+			PWM::Motor::BackAtBlindAllay();
+			System::Timer::wait_ms(50);
+			PWM::Motor::Disable();
+
+			System::Interface::SetLEDColor(0, 0, 255, 0);
+			PWM::Buzzer::Melody_OsakaLoop();
+			System::Interface::SetLEDColor(0, 0, 0, 0);
+
+			System::Timer::wait_ms(1000);
+			Mystat::Position::Reset();
+
+			Mystat::Map::MakePath(500, 300, 300, 3000, 2500);
+			Mystat::Map::ReadPath(500, 300, 300, 3000, 2500);
+		}
+
+		if (ExecuteFlag.GetValue()) {
+			Mystat::Map::Search_Adachi(START_X, START_Y, false, false, false);
+		}
+
+		// 3rd
+		if (ExecuteFlag.GetValue()) {
+			PWM::Motor::Enable();
+			System::Timer::wait_ms(50);
+			PWM::Motor::BackAtBlindAllay();
+			System::Timer::wait_ms(50);
+			PWM::Motor::Disable();
+
+			System::Interface::SetLEDColor(0, 0, 255, 0);
+			PWM::Buzzer::Melody_Namiki();
+			System::Interface::SetLEDColor(0, 0, 0, 0);
+
+			System::Timer::wait_ms(1000);
+			Mystat::Position::Reset();
+
+			Mystat::Map::MakePath(700, 300, 500, 4500, 2500);
+			Mystat::Map::ReadPath(700, 300, 500, 4500, 2500);
+		}
+
+		if (ExecuteFlag.GetValue()) {
+			Mystat::Map::Search_Adachi(START_X, START_Y, false, false, false);
+		}
+
+		// 4th
+		if (ExecuteFlag.GetValue()) {
+			PWM::Motor::Enable();
+			System::Timer::wait_ms(50);
+			PWM::Motor::BackAtBlindAllay();
+			System::Timer::wait_ms(50);
+			PWM::Motor::Disable();
+
+			System::Interface::SetLEDColor(0, 0, 255, 0);
+			PWM::Buzzer::Melody_Shibuya_Otogi();
+			System::Interface::SetLEDColor(0, 0, 0, 0);
+
+			System::Timer::wait_ms(1000);
+			Mystat::Position::Reset();
+
+			Mystat::Map::MakePath(1200, 400, 900, 4500, 2500);
+			Mystat::Map::ReadPath(1200, 400, 900, 4500, 2500);
+		}
+
+		if (ExecuteFlag.GetValue()) {
+			Mystat::Map::Search_Adachi(START_X, START_Y, false, false, false);
+		}
+
+		// 5th
+		if (ExecuteFlag.GetValue()) {
+			PWM::Motor::Enable();
+			System::Timer::wait_ms(50);
+			PWM::Motor::BackAtBlindAllay();
+			System::Timer::wait_ms(50);
+			PWM::Motor::Disable();
+
+			System::Interface::SetLEDColor(0, 0, 255, 0);
+			PWM::Buzzer::Melody_TE32_1();
+			System::Interface::SetLEDColor(0, 0, 0, 0);
+
+			System::Timer::wait_ms(1000);
+			Mystat::Position::Reset();
+
+			Mystat::Map::MakePath(1500, 500, 1200, 4500, 2500);
+			Mystat::Map::ReadPath(1500, 500, 1200, 4500, 2500);
+		}
+
+		if (ExecuteFlag.GetValue()) {
+			Mystat::Map::Search_Adachi(START_X, START_Y, false, false, false);
+		}
+	}
 
 	while(1) {
-		System::Interface::ModeSelect();
+		System::Interface::ModeSelect(false);
 		System::Interface::SetLEDColor(0, 0, 255, 0);
 		PWM::Buzzer::Melody_TE32_1();
 		System::Interface::SetLEDColor(0, 0, 0, 0);
@@ -105,6 +216,10 @@ int main(void) {
 //				Mystat::Map::SendData();
 				Mystat::Map::MakePath(500, 300, 300, 3000, 2500);
 				Mystat::Map::ReadPath(500, 300, 300, 3000, 2500);
+
+				if (ExecuteFlag.GetValue()) {
+					Mystat::Map::Search_Adachi(START_X, START_Y, false, false, false);
+				}
 				break;
 
 			case 4:
@@ -118,8 +233,8 @@ int main(void) {
 				break;
 
 			case 6:
-				Mystat::Map::MakePath(1500, 500,1200, 4500, 2500);
-				Mystat::Map::ReadPath(1500, 500,1200, 4500, 2500);
+				Mystat::Map::MakePath(1500, 500, 1200, 4500, 2500);
+				Mystat::Map::ReadPath(1500, 500, 1200, 4500, 2500);
 
 //				PWM::Motor::TestSlalom(false);
 //				PWM::Motor::TestDetectEdge(false, SLALOM_LEFT);
@@ -148,6 +263,7 @@ int main(void) {
 
 		System::Interface::SetLEDColor(0, 0, 0, 0);
 		System::Interface::SetLEDColor(1, 0, 0, 0);
+		ExecuteFlag.SetValue(false);
 		while(SW_NEXT == 1);
 }
 

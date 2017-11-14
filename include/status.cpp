@@ -89,7 +89,7 @@ namespace Status {
 				flag_r_01 = false, flag_r_02 = false, flag_r_wall = false,
 				wall_bothside = false, start = false;
 
-		if ((distance >= 25.0) && (distance <= 65.0) && !start) {
+		if ((distance >= 45.0) && (distance <= 65.0) && !start) {
 			if (Status::Sensor::GetValue(Status::Sensor::F, false) > SENSOR_WALL_EXIST_F_NEAR) {		// 袋小路で時々壁切れモードに入るのなんで
 				wall_bothside = false;
 			} else if ((Status::Sensor::GetValue(Status::Sensor::LS, false) > SENSOR_WALL_EXIST_L)
@@ -156,11 +156,11 @@ namespace Status {
 			flag_r_02 = false;
 			flag_r_wall = false;
 
-			if (!((distance >= 25.0) && (distance <= 65.0))) {
+			if (!((distance >= 45.0) && (distance <= 85.0))) {
 				start = false;
 			}
 
-			if (WallEdgeFlag.GetValue()) {
+			if (WallEdgeFlag.GetValue() && (distance >= 85.0)) {
 				System::Interface::SetLEDColor(0, 0, 0, 0);
 				System::Interface::SetLEDColor(1, 0, 0, 0);
 			}
@@ -633,6 +633,13 @@ namespace Mystat {
 			}
 		}
 	}
+
+	void Position::Set(uint8_t x, uint8_t y, int8_t dir) {
+		Position::x = x;
+		Position::y = y;
+		Position::dir = dir;
+	}
+
 	/* ---------------------------------------------------
 		Map
 	 --------------------------------------------------- */
@@ -2085,10 +2092,6 @@ namespace Mystat {
 		unsigned int path_cnt = 1, path_long = 0;
 		char senddata[127];
 
-		/*
-		 TODO: 斜め中加速度を別に指定できるようにする(次期目標?)
-		 */
-
 		Map::velocity = (float)velocity;
 		Map::turn_velocity = (float)turn_velocity;
 		Map::accel = (float)accel;
@@ -2189,6 +2192,29 @@ namespace Mystat {
 				break;
 			}
         } while ((dijkstra.next_x[check_x][check_y] != 255) && (dijkstra.next_y[check_x][check_y] != 255));
+
+        // 終点座標を自己位置座標に設定(最短走行後の復帰用)
+        switch (path.dir[path_cnt - 1]) {
+        	case DIR_EAST:
+        		Position::Set(next_x + 1, next_y / 2, path.dir[path_cnt - 1]);
+        		break;
+
+        	case DIR_WEST:
+        		Position::Set(next_x, next_y / 2, path.dir[path_cnt - 1]);
+        		break;
+
+        	case DIR_SOUTH:
+        		Position::Set(next_x, (next_y - 1) / 2, path.dir[path_cnt - 1]);
+        		break;
+
+        	case DIR_NORTH:
+        		Position::Set(next_x, (next_y + 1) / 2, path.dir[path_cnt - 1]);
+        		break;
+
+        	default:
+        		Position::Set(0, 0, 0);
+        		break;
+        }
 
         path_long = path_cnt;
 		path.length = path_long;
@@ -2550,9 +2576,8 @@ namespace Mystat {
 		}
 
 //		PWM::Fan::Disable();
-		System::Timer::wait_ms(1000);
+		System::Timer::wait_ms(50);
 		PWM::Motor::Disable();
-		ExecuteFlag.SetValue(false);
 
 		if (failed) {
 			PWM::Buzzer::Melody_ProtectionRadio();
@@ -2576,7 +2601,16 @@ namespace Mystat {
 		PWM::Motor::Enable();
 
 		if ((dest_x == START_X) && (dest_y == START_Y)){
-			PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, true);
+			if (Status::Sensor::GetValue(Status::Sensor::F, false) > SENSOR_WALL_EXIST_F_NEAR) {
+				PWM::Motor::Turning(true, 0);
+				Mystat::Position::UpDate(false, SIDE_REAR);
+				System::Timer::wait_ms(50);
+				PWM::Motor::BackAtBlindAllay();
+				System::Timer::wait_ms(50);
+				PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, false);
+			} else {
+				PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, true);
+			}
 		} else {
 			Distance.SetValue(POSITION_BACKWALL_CORRECTION);
 			PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, false);
@@ -2861,14 +2895,9 @@ namespace Mystat {
 		}
 
 		if (ExecuteFlag.GetValue()) {
-			wall_r = Status::Sensor::CheckWallExist(SIDE_RIGHT);
-			wall_l = Status::Sensor::CheckWallExist(SIDE_LEFT);
-			wall_f  = Status::Sensor::CheckWallExist(SIDE_FORWARD);
-
 			PWM::Motor::AccelDecel(0.0, -SEARCH_ACCEL, true);
 			System::Timer::wait_ms(10);
 			Status::Reset();
-			PWM::Motor::Disable();
 
 //		  (void)System::Flash::EraseBlock(BLOCK_DB0);
 
@@ -2885,6 +2914,10 @@ namespace Mystat {
 			}
 
 			System::Timer::wait_ms(100);
+
+			wall_r = Status::Sensor::CheckWallExist(SIDE_RIGHT);
+			wall_l = Status::Sensor::CheckWallExist(SIDE_LEFT);
+			wall_f  = Status::Sensor::CheckWallExist(SIDE_FORWARD);
 
 			if (!wall_f) {
 				// なにもしない

@@ -117,9 +117,9 @@ const static uint16_t ADC_WALLSENSOR_P2				= 0x114;			// 0B 01 0001 0100
 //																		   Ch 98 7654 3210
 
 // Sensor
-const static float GAIN_P_WALL						= 0.100;
-const static float GAIN_P_WALL_SH					= 0.065;
-const static float GAIN_P_WALL_SLANT				= 0.150;
+const static float GAIN_P_WALL						= 0.075;
+const static float GAIN_P_WALL_SH					= 0.040;
+const static float GAIN_P_WALL_SLANT				= 0.125;
 const static float CTRL_WALL_LIMIT					= 720.0;			// deg/s
 
 const static uint8_t SENSOR_AMOUNT					= 7;

@@ -857,7 +857,7 @@ namespace PWM {
 		static uint16_t cnt = 0;
 
 		if (WallPFlag.GetValue()) {
-			if (Velocity.GetValue(false) > SEARCH_SPEED) {
+			if (Velocity.GetValue(false) > (SEARCH_SPEED + 5.0)) {
 				gain_p_wall = GAIN_P_WALL_SH;
 			}
 

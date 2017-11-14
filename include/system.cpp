@@ -463,7 +463,6 @@ namespace System {
 				log_v_target[log_cnt] = Velocity.GetValue(false);
 				log_v_actual[log_cnt] = Velocity.GetValue(true);
 				log_a_v_target[log_cnt] = A_Velocity.GetValue(false);
-//				log_a_v_actual[log_cnt] = Distance.GetValue();
 				log_a_v_actual[log_cnt] = A_Velocity.GetValue(true);
 
 				log_cnt++;
@@ -788,7 +787,7 @@ namespace System {
 		return enc_value;
 	}
 
-	void Interface::ModeSelect() {
+	void Interface::ModeSelect(bool skip) {
 		volatile uint8_t cnt = 0;
 		bool locked = true, add = false;
 
@@ -797,6 +796,11 @@ namespace System {
 		waiting = false;
 
 		while (1) {
+			if (skip) {
+				mode = 1;
+				break;
+			}
+
 			if (Status::Calc::GyroOutToA_Velocity_Y() > 180.0) {
 				PWM::Buzzer::Enable();
 				PWM::Buzzer::SetDuty(1000.0);

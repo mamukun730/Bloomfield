@@ -122,6 +122,7 @@ namespace Mystat {
             static void Reset();
             static void UpDate(signed char traveling_dir);
             static void UpDate(bool move_section, signed char traveling_dir);
+            static void Set(uint8_t x, uint8_t y, int8_t dir);
     };
 
     class Map {

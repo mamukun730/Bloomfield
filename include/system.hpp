@@ -136,7 +136,7 @@ namespace System {
 			static void Encoder_Enable();
 			static void Encoder_Disable();
 
-			static void ModeSelect();
+			static void ModeSelect(bool skip);
 			static uint8_t GetExecuteMode();
 			static bool GetWaitingStatus();
 			static void SetWaitingStatus(bool wait);
