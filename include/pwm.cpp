@@ -35,7 +35,7 @@ namespace PWM {
 			{ 429.7183, 4616.4464, 31.000, 31.000, 2.000, 2.000, 45.000, 20, 0x08},		// 004: 45度Out, 300mm/s, r=40
 			{ 429.7183, 3693.1571, 13.000, 13.000, 0.500, 0.500,135.000, 25, 0x02},		// 005: 135度In, 300mm/s, r=40
 			{ 429.7183, 3693.1571,  8.500,  8.500, 2.000, 2.000,135.000, 25, 0x08},		// 006: 135度Out,300mm/s, r=40
-			{ 429.7183, 3693.1571,  4.000,  4.000, 0.500, 0.500, 90.000, 25, 0x08},		// 007: 90度,    300mm/s, r=40
+			{ 429.7183, 4616.4464,  4.000,  4.000, 0.500, 0.500, 90.000, 20, 0x08},		// 007: 90度,    300mm/s, r=40
 
 			// Slip = 60,000?
 			{ 458.3662,	3501.6601, 12.000, 12.000, 2.000, 2.000, 90.000, 30, 0x03},		// 008: 90度大,  400mm/s, r=50
@@ -848,6 +848,8 @@ namespace PWM {
 
 	void Motor::SetDuty() {
 		static float v_last_diff = 0.0, av_last_diff = 0.0;
+		int16_t wall_diff = 0;
+		static int16_t wall_diff_last = 0;
 		float a_velocity_wall = 0.0;
 		float v_actual = 0.0, v_target = 0.0;
 		float av_actual = 0.0, av_target = 0.0;
@@ -857,11 +859,9 @@ namespace PWM {
 		static uint16_t cnt = 0;
 
 		if (WallPFlag.GetValue()) {
-			if (Velocity.GetValue(false) > (SEARCH_SPEED + 5.0)) {
-				gain_p_wall = GAIN_P_WALL_SH;
-			}
-
-			a_velocity_wall = -1.0 * GAIN_P_WALL * Status::Calc::WallControlQuantity();
+			wall_diff = Status::Calc::WallControlQuantity();
+			a_velocity_wall = -1.0 * ((GAIN_P_WALL * wall_diff) + GAIN_D_WALL * (wall_diff - wall_diff_last));
+			wall_diff_last = wall_diff;
 
 			if (fabsf(a_velocity_wall) < CTRL_WALL_LIMIT) {
 				A_Velocity.SetValue(false, a_velocity_wall);
@@ -874,6 +874,8 @@ namespace PWM {
 			}
 
 			Degree.SetValue(0.0);
+		} else {
+			wall_diff_last = 0;
 		}
 
 		v_actual = Velocity.GetValue(true);
@@ -1047,7 +1049,7 @@ namespace PWM {
 			WallPFlag.SetValue(true);
 		}
 
-		while ((Distance.GetValue() < (section_length * (float)section) - decel_length) && ExecuteFlag.GetValue()) {
+		while ((Distance.GetValue() < (section_length * (float)section) - (decel_length * 1.10)) && ExecuteFlag.GetValue()) {
 			if (slant) {
 				Motor::CtrlAvoidObstacle(false);
 			}
@@ -1164,7 +1166,7 @@ namespace PWM {
 			A_Accel.SetValue(false, 0.0);
 			System::Interface::SetLEDColor(0, 0, 0, 255);
 
-			WallPFlag.SetValue(false);
+			WallPFlag.SetValue(true);
 
 			if (dir > 0) {
 				Distance.SetValue(SECTION_STRAIGHT - slalom_param[0].distance_after_left);
@@ -1185,14 +1187,11 @@ namespace PWM {
 		unsigned int phase_cnt = 0;
 		float degree_start = 0.0, section_length = 0.0, phase = 0.0, target_av = 0.0, target_a_acc = 0.0;
 
-		// TODO: 壁切れ状態/しきい値再チェック
-
 		WallEdgeFlag.SetValue(false);
-		WallPFlag.SetValue(true);
-//		A_Velocity.SetValue(false, 0.0);
 
 		if ((slalom_param[parameter].wall_correction & 0x02) == 0x02) {
-//			WallPFlag.SetValue(true);
+			WallPFlag.SetValue(true);
+			A_VelocityDiff.SetValue(0.0);
 
 			if (dir == SLALOM_RIGHT) {
 				System::Interface::SetLEDColor(1, 0, 255, 0);
@@ -1250,7 +1249,7 @@ namespace PWM {
 			System::Interface::SetLEDColor(0, 255, 255, 0);
 
 			while (!checked_walledge && ExecuteFlag.GetValue()) {
-//				Motor::CtrlAvoidObstacle(true);
+				Motor::CtrlAvoidObstacle(true);
 				checked_walledge = Status::DetectWallEdge_Slant(dir, false);
 			}
 
@@ -1259,11 +1258,11 @@ namespace PWM {
 
 			if (dir == SLALOM_RIGHT) {
 				while ((Distance.GetValue() <= (SECTION_SLANT + slalom_param[parameter].distance_before_right)) && ExecuteFlag.GetValue()) {
-					//				Motor::CtrlAvoidObstacle(true);
+					Motor::CtrlAvoidObstacle(true);
 				}
 			} else if (dir == SLALOM_LEFT) {
 				while ((Distance.GetValue() <= (SECTION_SLANT + slalom_param[parameter].distance_before_left)) && ExecuteFlag.GetValue()) {
-					//				Motor::CtrlAvoidObstacle(true);
+					Motor::CtrlAvoidObstacle(true);
 				}
 			}
 		} else {
@@ -1271,15 +1270,15 @@ namespace PWM {
 
 			if (dir == SLALOM_RIGHT) {
 				while ((Distance.GetValue() <= ((SECTION_STRAIGHT / 2.0) + slalom_param[parameter].distance_before_right)) && ExecuteFlag.GetValue()) {
-//					if (!Mystat::Status::CheckCtrlMode(CTRL_WALL_P)) {
-//						Motor::CtrlAvoidObstacle(true);
-//					}
+					if (!WallPFlag.GetValue()) {
+						Motor::CtrlAvoidObstacle(true);
+					}
 				}
 			} else if (dir == SLALOM_LEFT) {
 				while ((Distance.GetValue() <= ((SECTION_STRAIGHT / 2.0) + slalom_param[parameter].distance_before_left)) && ExecuteFlag.GetValue()) {
-//					if (!Mystat::Status::CheckCtrlMode(CTRL_WALL_P)) {
-//						Motor::CtrlAvoidObstacle(true);
-//					}
+					if (!WallPFlag.GetValue()) {
+						Motor::CtrlAvoidObstacle(true);
+					}
 				}
 			}
 		}
@@ -1389,7 +1388,8 @@ namespace PWM {
 //		Interface::LED::SetColor(Interface::LED::Red, led_dir);
 
 		if ((slalom_param[parameter].wall_correction & 0x01) == 0x01) {
-//			WallPFlag.SetValue(true);
+			WallPFlag.SetValue(true);
+			A_VelocityDiff.SetValue(0.0);
 			section_length = SECTION_STRAIGHT;
 		} else {
 			if ((slalom_param[parameter].wall_correction & 0x04) == 0x04) {
@@ -1412,7 +1412,7 @@ namespace PWM {
 
 		while (((Distance.GetValue() < section_length) || !checked_walledge) && ExecuteFlag.GetValue()) {
 			if ((slalom_param[parameter].wall_correction & 0x04) == 0x04) {
-//				Motor::CtrlAvoidObstacle(true);
+				Motor::CtrlAvoidObstacle(true);
 
 				if (!checked_walledge) {
 					checked_walledge = Status::DetectWallEdge_Slant(dir * -1, false);
@@ -1422,9 +1422,7 @@ namespace PWM {
 			}
 		}
 
-//		Mystat::Status::ResetValue(false);
 		(void)Status::DetectWallEdge_Slant(0, true);
-//		Interface::LED::SetColor(Interface::LED::None, Interface::LED::Both);
 		System::Interface::SetLEDColor(0, 0, 0, 0);
 		Distance.SetValue(0.0);
 	}
@@ -1580,19 +1578,19 @@ namespace PWM {
 		PWM::Motor::Enable();
 
 		Distance.SetValue(POSITION_BACKWALL_CORRECTION);
-		PWM::Motor::AccelDecel(400.0, SEARCH_ACCEL, false);
-//		PWM::Motor::Run(1, false);
+		PWM::Motor::AccelDecel(850.0, 4500.0, false);
+		PWM::Motor::Run(1, false);
 
-		PWM::Motor::Slalom(12, SLALOM_LEFT);
+//		PWM::Motor::Slalom(12, SLALOM_LEFT);
 //		PWM::Motor::Slalom(7, SLALOM_RIGHT);
 //		PWM::Motor::Slalom(SLALOM_RIGHT);
 //		PWM::Motor::Run(1, false);
 //		PWM::Motor::Slalom(SLALOM_RIGHT);
 //		PWM::Motor::Slalom(SLALOM_LEFT);
-//		PWM::Motor::Run(1, false);
+		PWM::Motor::Run(1, false);
 //		PWM::Motor::Slalom(SLALOM_LEFT);
-		PWM::Motor::AccelDecel(0.0, -SEARCH_ACCEL, false);
-		System::Timer::wait_ms(1000);
+		PWM::Motor::AccelDecel(0.0, -4500.0, false);
+//		System::Timer::wait_ms(1000);
 
 		PWM::Motor::Disable();
 		ExecuteFlag.SetValue(false);

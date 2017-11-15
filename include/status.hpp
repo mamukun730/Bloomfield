@@ -38,13 +38,14 @@ namespace Status {
                 LS, LC, LF, F, RF, RC, RS
             };
 
+            static void Reset();
             static void SetValue(uint16_t on[SENSOR_AMOUNT], uint16_t off[SENSOR_AMOUNT]);
             static uint16_t GetValue(uint8_t id, bool past);
             static int16_t GetDiff(uint8_t id);
             static bool CheckWallExist(int8_t dir);
 
         private:
-            static uint16_t last_value[SENSOR_AMOUNT], past_value[SENSOR_AMOUNT];
+            static uint16_t last_value[SENSOR_AMOUNT], past_value[SENSOR_DIFF_PAST_MS][SENSOR_AMOUNT];
             static int16_t diff[SENSOR_AMOUNT];
     };
 

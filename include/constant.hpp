@@ -58,8 +58,8 @@ const static uint8_t MAPSIZE_X						= 16;
 const static uint8_t MAPSIZE_Y						= 16;
 const static uint8_t START_X						= 0;
 const static uint8_t START_Y						= 0;
-const static uint8_t GOAL_X							= 4;				// [2017] Local:5, AllJapan: 4
-const static uint8_t GOAL_Y							= 4;				// [2017] Local:6, AllJapan: 4
+const static uint8_t GOAL_X							= 5;				// [2017] Local:5, AllJapan: 4
+const static uint8_t GOAL_Y							= 6;				// [2017] Local:6, AllJapan: 4
 const static bool ENABLE_FULLGOAL					= true;
 
 const static uint8_t FLAG_EAST						= 0x80;
@@ -102,7 +102,7 @@ const static float POSITION_POLE_DETECT_F_L			= 67.0;
 const static float POSITION_POLE_DETECT_F_R			= 62.0;
 
 const static float POSITION_EDGE_DETECT_SH_L		= 40.0;
-const static float POSITION_EDGE_DETECT_SH_R		= 44.0;
+const static float POSITION_EDGE_DETECT_SH_R		= 45.0;
 const static float POSITION_POLE_DETECT_SH_L		= 45.0;
 const static float POSITION_POLE_DETECT_SH_R		= 49.0;
 
@@ -117,9 +117,13 @@ const static uint16_t ADC_WALLSENSOR_P2				= 0x114;			// 0B 01 0001 0100
 //																		   Ch 98 7654 3210
 
 // Sensor
-const static float GAIN_P_WALL						= 0.075;
+const static float GAIN_P_WALL						= 0.080;
+const static float GAIN_I_WALL						= 0.000;
+const static float GAIN_D_WALL						= 0.064;
+
 const static float GAIN_P_WALL_SH					= 0.040;
 const static float GAIN_P_WALL_SLANT				= 0.125;
+
 const static float CTRL_WALL_LIMIT					= 720.0;			// deg/s
 
 const static uint8_t SENSOR_AMOUNT					= 7;
@@ -133,7 +137,8 @@ const static uint16_t SENSOR_CTRL_THRESHOLD_R		= 260;
 const static uint16_t SENSOR_CTRL_THRESHOLD_LC		= 650;
 const static uint16_t SENSOR_CTRL_THRESHOLD_RC		= 650;
 
-const static uint16_t SENSOR_DIFF_THRESHOLD			= 5;
+const static uint16_t SENSOR_DIFF_THRESHOLD			= 25;
+const static uint8_t SENSOR_DIFF_PAST_MS			= 5;				// 何ms前のセンサ値を差分として使う?
 
 const static uint16_t SENSOR_WALL_EXIST_L			= 90;				// 壁有無閾値
 const static uint16_t SENSOR_WALL_EXIST_F			= 110;
@@ -173,8 +178,8 @@ const static float MOTOR_R							= 1.700;			// 端子間抵抗 [Ω]
 // Encoder
 const static uint16_t ENCODER_INIT_VAL				= 32767;
 const static uint16_t ENCODER_MAX					= 4096;
-const static float GAIN_P_ENCODER					= 0.345454543;
-const static float GAIN_I_ENCODER					= 0.004242424;
+const static float GAIN_P_ENCODER					= 0.690909086;
+const static float GAIN_I_ENCODER					= 0.005303030;
 const static float GAIN_D_ENCODER					= 0.130909091;
 
 // Gyro

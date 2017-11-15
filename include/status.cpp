@@ -20,6 +20,7 @@ namespace Status {
 		Accel.SetValue(false, 0.0);
 		A_Accel.SetValue(false, 0.0);
 
+		Sensor::Reset();
 		GyroCtrlFlag.SetValue(true);
 	}
 
@@ -413,12 +414,28 @@ namespace Status {
 	}
 
 // Sensor
-	uint16_t Sensor::last_value[SENSOR_AMOUNT], Sensor::past_value[SENSOR_AMOUNT];
+	uint16_t Sensor::last_value[SENSOR_AMOUNT], Sensor::past_value[SENSOR_DIFF_PAST_MS][SENSOR_AMOUNT];
 	int16_t Sensor::diff[SENSOR_AMOUNT];
 
+	void Sensor::Reset() {
+		for (uint8_t cnt1 = 0; cnt1 < SENSOR_DIFF_PAST_MS; cnt1++) {
+			for (uint8_t cnt2 = 0; cnt2 < SENSOR_AMOUNT; cnt2++) {
+				past_value[cnt1][cnt2] = 0;
+				last_value[cnt2] = 0;
+				diff[cnt2] = 0;
+			}
+		}
+	}
+
 	void Sensor::SetValue(uint16_t on[SENSOR_AMOUNT], uint16_t off[SENSOR_AMOUNT]) {
+		for (uint8_t cnt1 = (SENSOR_DIFF_PAST_MS - 1); cnt1 > 0; cnt1--) {
+			for (uint8_t cnt2 = 0; cnt2 < SENSOR_AMOUNT; cnt2++) {
+				past_value[cnt1][cnt2] = past_value[cnt1 - 1][cnt2];
+			}
+		}
+
 		for (uint8_t cnt = 0; cnt < SENSOR_AMOUNT; cnt++) {
-			past_value[cnt] = last_value[cnt];
+			past_value[0][cnt] = last_value[cnt];
 
 			if (on[cnt] - off[cnt] > 0) {
 				last_value[cnt] = on[cnt] - off[cnt];
@@ -426,7 +443,7 @@ namespace Status {
 				last_value[cnt] = 0;
 			}
 
-			diff[cnt] = last_value[cnt] - past_value[cnt];
+			diff[cnt] = last_value[cnt] - past_value[SENSOR_DIFF_PAST_MS - 1][cnt];
 		}
 	}
 
@@ -434,7 +451,7 @@ namespace Status {
 		if (id >= SENSOR_AMOUNT) {
 			return 0;
 		} else if (past) {
-			return past_value[id];
+			return past_value[0][id];
 		} else {
 			return last_value[id];
 		}
@@ -2427,20 +2444,20 @@ namespace Mystat {
 						} while ((path_cnt + i + 1) < path.length);
 
 						path.velocity_next[path_cnt] = path.velocity[path_cnt + i + 1];
-						accel_distance = ((float)(path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2 * (float)accel));
+						accel_distance = ((float)(path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2.0 * (float)accel));
 
 						if (path_cnt == 0) {
-							accel_distance += ((float)(path.velocity[path_cnt] * path.velocity[path_cnt]) / (2 * (float)accel));
+							accel_distance += ((float)(path.velocity[path_cnt] * path.velocity[path_cnt]) / (2.0 * (float)accel));
 
 							if (accel_distance > (SECTION_STRAIGHT * (float)j * 0.25)) {
 								path.velocity[path_cnt] = (short)sqrt(2.0 * (float)accel * SECTION_STRAIGHT * 0.25 * j);
 								path.decel_length[path_cnt] = (short)((path.velocity[path_cnt] * path.velocity[path_cnt]) / (2 * (float)accel));
 							} else {
-								path.decel_length[path_cnt] = (short)((path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2 * (float)accel));
+								path.decel_length[path_cnt] = (short)((path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2.0 * (float)accel));
 							}
 						} else if (accel_distance > (SECTION_STRAIGHT * (float)j * 0.25)) {
 							path.velocity[path_cnt] = (short)sqrt((2.0 * (float)accel * SECTION_STRAIGHT * 0.25 * j) + path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]);
-							path.decel_length[path_cnt] = (short)((path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2 * (float)accel));
+							path.decel_length[path_cnt] = (short)((path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2.0 * (float)accel));
 						} else {
 							path.decel_length[path_cnt] = (short)accel_distance;
 						}
@@ -2462,11 +2479,11 @@ namespace Mystat {
 						}
 
 						path.velocity_next[path_cnt] = path.velocity[path_cnt + i + 1];
-						accel_distance = ((float)(path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2 * (float)slant_accel));
+						accel_distance = ((float)(path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2.0 * (float)slant_accel));
 
 						if (accel_distance > (SECTION_SLANT * (float)(i + 1) * 0.5)) {
-							path.velocity[path_cnt] = (short)sqrt((2 * (float)accel * SECTION_SLANT * 0.5 * (i + 1)) + path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]);
-							path.decel_length[path_cnt] = (short)((path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2 * (float)slant_accel));
+							path.velocity[path_cnt] = (short)sqrt((2.0 * (float)slant_accel * SECTION_SLANT * 0.5 * (i + 1)) + path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]);
+							path.decel_length[path_cnt] = (short)((path.velocity[path_cnt] * path.velocity[path_cnt] - path.velocity[path_cnt + i + 1] * path.velocity[path_cnt + i + 1]) / (2.0 * (float)slant_accel));
 						} else {
 							path.decel_length[path_cnt] = (short)accel_distance;
 						}
