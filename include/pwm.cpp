@@ -29,30 +29,30 @@ namespace PWM {
 			{ 550.0394, 6050.8686,  8.000,  8.000,10.500,13.000, 90.000, 25, 0x03},		// 000: 90度小,  240mm/s, r=25
 
 			// Slip = 60,000?
-			{ 381.9719,	2431.7084, 20.000, 20.000, 2.000, 2.000, 90.000, 30, 0x03},		// 001: 90度大,  300mm/s, r=45
-			{ 390.6530, 2543.4967, 10.000, 10.000, 2.000, 2.000,180.000, 30, 0x03},		// 002: 180度大, 300mm/s, r=43
+			{ 381.9719,	2431.7084, 20.000, 20.000, 5.000, 5.000, 90.000, 30, 0x03},		// 001: 90度大,  300mm/s, r=45
+			{ 390.6530, 2543.4967, 10.000, 10.000, 5.000, 5.000,180.000, 30, 0x03},		// 002: 180度大, 300mm/s, r=43
 			{ 429.7183, 4616.4464, 13.000, 13.000, 0.500, 0.500, 45.000, 20, 0x02},		// 003: 45度In,  300mm/s, r=40
-			{ 429.7183, 4616.4464, 31.000, 31.000, 2.000, 2.000, 45.000, 20, 0x08},		// 004: 45度Out, 300mm/s, r=40
-			{ 429.7183, 3693.1571, 13.000, 13.000, 0.500, 0.500,135.000, 25, 0x02},		// 005: 135度In, 300mm/s, r=40
-			{ 429.7183, 3693.1571,  8.500,  8.500, 2.000, 2.000,135.000, 25, 0x08},		// 006: 135度Out,300mm/s, r=40
-			{ 429.7183, 4616.4464,  4.000,  4.000, 0.500, 0.500, 90.000, 20, 0x08},		// 007: 90度,    300mm/s, r=40
+			{ 429.7183, 4616.4464, 31.000, 31.000, 5.000, 5.000, 45.000, 20, 0x08},		// 004: 45度Out, 300mm/s, r=40
+			{ 429.7183, 3693.1571, 17.000, 17.000, 0.500, 0.500,135.000, 25, 0x02},		// 005: 135度In, 300mm/s, r=40
+			{ 429.7183, 3693.1571,  8.500,  8.500, 5.000, 5.000,135.000, 25, 0x08},		// 006: 135度Out,300mm/s, r=40
+			{ 429.7183, 4616.4464,  8.000,  8.000, 0.500, 0.500, 90.000, 20, 0x08},		// 007: 90度,    300mm/s, r=40
 
 			// Slip = 60,000?
-			{ 458.3662,	3501.6601, 12.000, 12.000, 2.000, 2.000, 90.000, 30, 0x03},		// 008: 90度大,  400mm/s, r=50
-			{ 532.9840, 4734.5323,  5.000,  5.000, 2.000, 2.000,180.000, 30, 0x03},		// 009: 180度大, 400mm/s, r=43
+			{ 458.3662,	3501.6601, 12.000, 12.000, 5.000, 5.000, 90.000, 30, 0x03},		// 008: 90度大,  400mm/s, r=50
+			{ 532.9840, 4734.5323,  5.000,  5.000, 5.000, 5.000,180.000, 30, 0x03},		// 009: 180度大, 400mm/s, r=43
 			{ 572.9578, 8207.0158, 14.000, 14.000, 0.500, 0.500, 45.000, 20, 0x02},		// 010: 45度In,  400mm/s, r=40
-			{ 572.9578, 8207.0158, 31.000, 31.000, 2.000, 2.000, 45.000, 20, 0x08},		// 011: 45度Out, 400mm/s, r=40
+			{ 572.9578, 8207.0158, 31.000, 31.000, 5.000, 5.000, 45.000, 20, 0x08},		// 011: 45度Out, 400mm/s, r=40
 			{ 572.9578, 8207.0158, 20.000, 20.000, 0.500, 0.500,135.000, 20, 0x02},		// 012: 135度In, 400mm/s, r=40
-			{ 572.9578, 8207.0158, 12.000, 12.000, 2.000, 2.000,135.000, 20, 0x08},		// 013: 135度Out,400mm/s, r=40
+			{ 572.9578, 8207.0158, 12.000, 12.000, 5.000, 5.000,135.000, 20, 0x08},		// 013: 135度Out,400mm/s, r=40
 			{ 572.9578, 8207.0158,  6.500,  6.500, 0.500, 0.500, 90.000, 20, 0x08},		// 014: 90度,    400mm/s, r=40
 
 			// Slip = 60,000?
-			{ 572.9578,	6565.6127, 13.000, 13.000, 2.000, 2.000, 90.000, 25, 0x03},		// 015: 90度大,  500mm/s, r=50
-			{ 666.2300, 8877.2481, 10.000, 10.000, 2.000, 2.000,180.000, 25, 0x03},		// 016: 180度大, 500mm/s, r=43
+			{ 572.9578,	6565.6127, 13.000, 13.000, 5.000, 5.000, 90.000, 25, 0x03},		// 015: 90度大,  500mm/s, r=50
+			{ 666.2300, 8877.2481, 10.000, 10.000, 5.000, 5.000,180.000, 25, 0x03},		// 016: 180度大, 500mm/s, r=43
 			{ 636.6198,10132.1184,  7.000,  7.000, 0.500, 0.500, 45.000, 20, 0x02},		// 017: 45度In,  500mm/s, r=45
-			{ 636.6198,10132.1184, 25.000, 25.000, 2.000, 2.000, 45.000, 20, 0x08},		// 018: 45度Out, 500mm/s, r=45
+			{ 636.6198,10132.1184, 25.000, 25.000, 5.000, 5.000, 45.000, 20, 0x08},		// 018: 45度Out, 500mm/s, r=45
 			{ 682.0926, 9305.0067,  8.000,  8.000, 0.500, 0.500,135.000, 25, 0x02},		// 019: 135度In, 500mm/s, r=42
-			{ 682.0926, 9305.0067,  1.000,  1.000, 2.000, 2.000,135.000, 25, 0x08},		// 020: 135度Out,500mm/s, r=42
+			{ 682.0926, 9305.0067,  1.000,  1.000, 5.000, 5.000,135.000, 25, 0x08},		// 020: 135度Out,500mm/s, r=42
 			{ 716.1972,10258.7698,  1.500,  1.500, 0.500, 0.500, 90.000, 25, 0x08},		// 021: 90度,    500mm/s, r=40
 	};
 
@@ -968,24 +968,23 @@ namespace PWM {
 	}
 
 	void Motor::CtrlAvoidObstacle(bool exit_area) {
-		unsigned int k = 1;
-		float a_vel = 0.0;
+		float a_vel = 0.0, k = 1.00;
 
 		/*
 		 TODO: 出口区画では次に曲がる方向を考慮する? 前壁誤検知対策の強化
 		 */
 
 		if (exit_area) {
-			k = 1;
+			k = 0.00;
 		}
 
 //		if ((ADC::Sensor::GetValue(ADC::Sensor::LF) > WALL_CTRL_THRESHOLD_F_LF_SL * k) && (ADC::Sensor::GetValue(ADC::Sensor::RF) < WALL_CTRL_THRESHOLD_F_RF_SL)) {
-		if (Status::Sensor::GetValue(Status::Sensor::LC, false) > (SENSOR_CTRL_THRESHOLD_LC * k)) {
-			a_vel = GAIN_P_WALL_SLANT * (float)(Status::Sensor::GetValue(Status::Sensor::LC, false) - SENSOR_CTRL_THRESHOLD_LC);
+		if (Status::Sensor::GetValue(Status::Sensor::LC, false) > SENSOR_CTRL_THRESHOLD_LC) {
+			a_vel = GAIN_P_WALL_SLANT * k * (float)(Status::Sensor::GetValue(Status::Sensor::LC, false) - SENSOR_CTRL_THRESHOLD_LC);
 			A_Velocity.SetValue(false, -a_vel);
 //		} else if ((ADC::Sensor::GetValue(ADC::Sensor::RF) > WALL_CTRL_THRESHOLD_F_RF_SL * k) && (ADC::Sensor::GetValue(ADC::Sensor::LF) < WALL_CTRL_THRESHOLD_F_LF_SL)) {
-		} else if (Status::Sensor::GetValue(Status::Sensor::RC, false) > (SENSOR_CTRL_THRESHOLD_RC * k)) {
-			a_vel = GAIN_P_WALL_SLANT * (float)(Status::Sensor::GetValue(Status::Sensor::RC, false) - SENSOR_CTRL_THRESHOLD_RC);
+		} else if (Status::Sensor::GetValue(Status::Sensor::RC, false) > SENSOR_CTRL_THRESHOLD_RC) {
+			a_vel = GAIN_P_WALL_SLANT * k * (float)(Status::Sensor::GetValue(Status::Sensor::RC, false) - SENSOR_CTRL_THRESHOLD_RC);
 			A_Velocity.SetValue(false, a_vel);
 		} else {
 			A_Velocity.SetValue(false, 0.0);
@@ -1249,7 +1248,7 @@ namespace PWM {
 			System::Interface::SetLEDColor(0, 255, 255, 0);
 
 			while (!checked_walledge && ExecuteFlag.GetValue()) {
-				Motor::CtrlAvoidObstacle(true);
+				//Motor::CtrlAvoidObstacle(true);
 				checked_walledge = Status::DetectWallEdge_Slant(dir, false);
 			}
 
@@ -1258,11 +1257,11 @@ namespace PWM {
 
 			if (dir == SLALOM_RIGHT) {
 				while ((Distance.GetValue() <= (SECTION_SLANT + slalom_param[parameter].distance_before_right)) && ExecuteFlag.GetValue()) {
-					Motor::CtrlAvoidObstacle(true);
+					//Motor::CtrlAvoidObstacle(true);
 				}
 			} else if (dir == SLALOM_LEFT) {
 				while ((Distance.GetValue() <= (SECTION_SLANT + slalom_param[parameter].distance_before_left)) && ExecuteFlag.GetValue()) {
-					Motor::CtrlAvoidObstacle(true);
+					//Motor::CtrlAvoidObstacle(true);
 				}
 			}
 		} else {
@@ -1271,13 +1270,13 @@ namespace PWM {
 			if (dir == SLALOM_RIGHT) {
 				while ((Distance.GetValue() <= ((SECTION_STRAIGHT / 2.0) + slalom_param[parameter].distance_before_right)) && ExecuteFlag.GetValue()) {
 					if (!WallPFlag.GetValue()) {
-						Motor::CtrlAvoidObstacle(true);
+						//Motor::CtrlAvoidObstacle(true);
 					}
 				}
 			} else if (dir == SLALOM_LEFT) {
 				while ((Distance.GetValue() <= ((SECTION_STRAIGHT / 2.0) + slalom_param[parameter].distance_before_left)) && ExecuteFlag.GetValue()) {
 					if (!WallPFlag.GetValue()) {
-						Motor::CtrlAvoidObstacle(true);
+						//Motor::CtrlAvoidObstacle(true);
 					}
 				}
 			}
@@ -1412,7 +1411,7 @@ namespace PWM {
 
 		while (((Distance.GetValue() < section_length) || !checked_walledge) && ExecuteFlag.GetValue()) {
 			if ((slalom_param[parameter].wall_correction & 0x04) == 0x04) {
-				Motor::CtrlAvoidObstacle(true);
+				//Motor::CtrlAvoidObstacle(true);
 
 				if (!checked_walledge) {
 					checked_walledge = Status::DetectWallEdge_Slant(dir * -1, false);
@@ -1486,16 +1485,14 @@ namespace PWM {
 		TargetVelocity.SetValue(-SEARCH_SPEED / 2.0);
 		Accel.SetValue(false, -SEARCH_ACCEL);
 
-		System::Timer::wait_ms(300);
+		System::Timer::wait_ms(200);
 		GyroCtrlFlag.SetValue(false);
+		VelocityDiff.SetValue(0.0);
 		System::Timer::wait_ms(200);
 
 		TargetVelocity.SetValue(0.0);
-		Accel.SetValue(false, SEARCH_ACCEL);
-
-		while(Velocity.GetValue(false) < 0.0);
-
-		Accel.SetValue(false, 0.0);
+		Velocity.SetValue(false, 0.0);
+		VelocityDiff.SetValue(0.0);
 
 		Status::Reset();
 		Distance.SetValue(POSITION_BACKWALL_CORRECTION);

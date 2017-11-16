@@ -58,8 +58,8 @@ const static uint8_t MAPSIZE_X						= 16;
 const static uint8_t MAPSIZE_Y						= 16;
 const static uint8_t START_X						= 0;
 const static uint8_t START_Y						= 0;
-const static uint8_t GOAL_X							= 5;				// [2017] Local:5, AllJapan: 4
-const static uint8_t GOAL_Y							= 6;				// [2017] Local:6, AllJapan: 4
+const static uint8_t GOAL_X							= 4;				// [2017] Local:5, AllJapan: 4
+const static uint8_t GOAL_Y							= 4;				// [2017] Local:6, AllJapan: 4
 const static bool ENABLE_FULLGOAL					= true;
 
 const static uint8_t FLAG_EAST						= 0x80;
@@ -152,9 +152,9 @@ const static uint16_t WALL_EDGE_THRESHOLD_SE_RS		= 260;
 const static uint16_t WALL_EDGE_THRESHOLD_SH_LS		= 176;				// 壁切れ監視閾値(最短) 0.45Ref
 const static uint16_t WALL_EDGE_THRESHOLD_SH_RS		= 180;
 
-const static uint16_t WALL_EDGE_THRESHOLD2_F_LS		= 245;				// 壁切れ
+const static uint16_t WALL_EDGE_THRESHOLD2_F_LS		= 245;				// 壁切れ(横)
 const static uint16_t WALL_EDGE_THRESHOLD2_F_RS		= 245;
-const static uint16_t WALL_EDGE_THRESHOLD2_F_LC		= 130;
+const static uint16_t WALL_EDGE_THRESHOLD2_F_LC		= 130;				// 壁切れ(中横)
 const static uint16_t WALL_EDGE_THRESHOLD2_F_RC		= 160;
 
 const static uint16_t WALL_EDGE_THRESHOLD_F_LC		= 65;				// 柱切れ監視閾値

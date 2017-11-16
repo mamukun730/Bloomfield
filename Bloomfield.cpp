@@ -212,19 +212,13 @@ int main(void) {
 				break;
 
 			case 3:
-//				Mystat::Map::Search_Adachi(GOAL_X, GOAL_Y, false, false, false);
-//				Mystat::Map::SendData();
-				Mystat::Map::MakePath(500, 300, 300, 3000, 2500);
-				Mystat::Map::ReadPath(500, 300, 300, 3000, 2500);
-
-				if (ExecuteFlag.GetValue()) {
-					Mystat::Map::Search_Adachi(START_X, START_Y, false, false, false);
-				}
+				Mystat::Map::MakePath(500, 300, 300, 3000, 2000);
+				Mystat::Map::ReadPath(500, 300, 300, 3000, 2000);
 				break;
 
 			case 4:
-				Mystat::Map::MakePath(700, 300, 500, 4500, 2500);
-				Mystat::Map::ReadPath(700, 300, 500, 4500, 2500);
+				Mystat::Map::MakePath(800, 300, 600, 3000, 2000);
+				Mystat::Map::ReadPath(800, 300, 600, 3000, 2000);
 				break;
 
 			case 5:

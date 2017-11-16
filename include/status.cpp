@@ -90,7 +90,7 @@ namespace Status {
 				flag_r_01 = false, flag_r_02 = false, flag_r_wall = false,
 				wall_bothside = false, start = false;
 
-		if ((distance >= 45.0) && (distance <= 65.0) && !start) {
+		if ((distance >= 45.0) && (distance <= 85.0) && !start) {
 			if (Status::Sensor::GetValue(Status::Sensor::F, false) > SENSOR_WALL_EXIST_F_NEAR) {		// 袋小路で時々壁切れモードに入るのなんで
 				wall_bothside = false;
 			} else if ((Status::Sensor::GetValue(Status::Sensor::LS, false) > SENSOR_WALL_EXIST_L)
@@ -135,7 +135,7 @@ namespace Status {
 //					flag_r_01 = true;
 				}
 			} else if (flag_r_01 && !flag_r_02 && !flag_l_02) {
-				if ((Status::Sensor::GetValue(Status::Sensor::RS, false) < WALL_EDGE_THRESHOLD2_F_LS)
+				if ((Status::Sensor::GetValue(Status::Sensor::RS, false) < WALL_EDGE_THRESHOLD2_F_RS)
 						&& flag_r_wall) {
 					flag_r_02 = true;
 					Distance.SetValue(POSITION_EDGE_DETECT_F_R);
@@ -732,8 +732,8 @@ namespace Mystat {
 		float section_length, velocity;
 
 		if (slant) {
-//			section_length = SECTION_SLANT;
-			section_length = SECTION_STRAIGHT;
+			section_length = SECTION_SLANT;
+//			section_length = SECTION_STRAIGHT;
 		} else {
 			section_length = SECTION_STRAIGHT;
 		}
@@ -748,7 +748,7 @@ namespace Mystat {
 			return (float)(partition * section_length * 2.0 * (Map::turn_velocity / (velocity + Map::turn_velocity)));
 		} else {
 			if (slant) {
-				return SECTION_STRAIGHT;
+				return SECTION_SLANT;
 			} else {
 				return SECTION_STRAIGHT;
 			}
@@ -1949,9 +1949,6 @@ namespace Mystat {
 		unsigned char check_x = 0, check_y = 0;
 		unsigned char j, i;
 
-		path.cost_slant = 10;
-		path.cost_straight = 14;
-
 		for (j = 0; j < MAPSIZE_Y * 2; j++) {
 			for (i = 0; i < MAPSIZE_X; i++) {
 				dijkstra.cost[i][j] = INF;
@@ -2109,9 +2106,13 @@ namespace Mystat {
 		unsigned int path_cnt = 1, path_long = 0;
 		char senddata[127];
 
-		Map::velocity = (float)velocity;
-		Map::turn_velocity = (float)turn_velocity;
-		Map::accel = (float)accel;
+//		Map::velocity = (float)velocity;
+//		Map::turn_velocity = (float)turn_velocity;
+//		Map::accel = (float)accel;
+
+		Map::velocity = 5000.0;
+		Map::turn_velocity = 2000.0;
+		Map::accel = 15000.0;
 
 		Map::Dijkstra();
 
@@ -2351,6 +2352,8 @@ namespace Mystat {
 		float accel_distance;
 		bool failed = false, straight_first = false;
 
+		char senddata[127];
+
 		switch (turn_velocity) {
 			case 300:
 				turnparam_num = 0;
@@ -2542,38 +2545,58 @@ namespace Mystat {
 						}
 
 						PWM::Motor::AccelRun(path.section[path_cnt], false, path.velocity[path_cnt], path.velocity_next[path_cnt], path.decel_length[path_cnt], (float)accel);
+//						sprintf(senddata, "[Straight] %d, %d, %d, %d\n",
+//								path.section[path_cnt], path.velocity[path_cnt], path.velocity_next[path_cnt], path.decel_length[path_cnt]);
+//						System::SCI::SendChar(senddata);
 						break;
 
 					case 10:	// 大回り90
 						PWM::Motor::Slalom(1 + (7 * turnparam), -path.turn_dir[path_cnt]);
+//						sprintf(senddata, "[90]\n");
+//						System::SCI::SendChar(senddata);
 						break;
 
 					case 11:	// 大回り180
 						PWM::Motor::Slalom(2 + (7 * turnparam), -path.turn_dir[path_cnt]);
+//						sprintf(senddata, "[180]\n");
+//						System::SCI::SendChar(senddata);
 						break;
 
 					case 20:	// 45度In
 						PWM::Motor::Slalom(3 + (7 * turnparam), -path.turn_dir[path_cnt]);
+//						sprintf(senddata, "[45In]\n");
+//						System::SCI::SendChar(senddata);
 						break;
 
 					case 21:	// Out
 						PWM::Motor::Slalom(4 + (7 * turnparam), -path.turn_dir[path_cnt]);
+//						sprintf(senddata, "[45Out]\n");
+//						System::SCI::SendChar(senddata);
 						break;
 
 					case 30:	// 90度
 						PWM::Motor::Slalom(7 + (7 * turnparam), -path.turn_dir[path_cnt]);
+//						sprintf(senddata, "[V90]\n");
+//						System::SCI::SendChar(senddata);
 						break;
 
 					case 40:	// 135度In
 						PWM::Motor::Slalom(5 + (7 * turnparam), -path.turn_dir[path_cnt]);
+//						sprintf(senddata, "[135In]\n");
+//						System::SCI::SendChar(senddata);
 						break;
 
 					case 41:	// Out
 						PWM::Motor::Slalom(6 + (7 * turnparam), -path.turn_dir[path_cnt]);
+//						sprintf(senddata, "[135Out]\n");
+//						System::SCI::SendChar(senddata);
 						break;
 
 					case 100:	// 斜め中直進
 						PWM::Motor::AccelRun(path.section[path_cnt], true, path.velocity[path_cnt], path.velocity_next[path_cnt], path.decel_length[path_cnt], (float)slant_accel);
+//						sprintf(senddata, "[Straight_Sl] %d, %d, %d, %d\n",
+//								path.section[path_cnt], path.velocity[path_cnt], path.velocity_next[path_cnt], path.decel_length[path_cnt]);
+//						System::SCI::SendChar(senddata);
 
 						if (!straight_first) {
 							turnparam = turnparam_num;
