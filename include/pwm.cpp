@@ -26,7 +26,7 @@ namespace PWM {
 				Sl_IN	Sl_OUT	St_IN	St_OUT
  */
 			// Slip = 16,000?
-			{ 550.0394, 6050.8686,  8.000,  8.000,10.500,13.000, 90.000, 25, 0x03},		// 000: 90度小,  240mm/s, r=25
+			{ 550.0394, 6050.8686,  7.500,  7.500, 9.800,11.300, 90.000, 25, 0x03},		// 000: 90度小,  240mm/s, r=25
 
 			// Slip = 60,000?
 			{ 381.9719,	2431.7084, 20.000, 20.000, 5.000, 5.000, 90.000, 30, 0x03},		// 001: 90度大,  300mm/s, r=45
@@ -943,6 +943,7 @@ namespace PWM {
 		PORTB.PMR.BIT.B3 = 1;
 
 		Status::Reset();
+		Status::Sensor::Reset();
 		System::Interface::Encoder_Enable();
 		MTU.TSTR.BIT.CST0 = 1;
 	}
@@ -1616,7 +1617,7 @@ namespace PWM {
 		PWM::Motor::Enable();
 
 		PWM::Motor::AccelDecel(SEARCH_SPEED, SEARCH_ACCEL, true);
-		PWM::Motor::Run(14, false);
+		PWM::Motor::Run(6, false);
 		PWM::Motor::AccelDecel(0.0, -SEARCH_ACCEL, true);
 
 		System::Timer::wait_ms(1000);

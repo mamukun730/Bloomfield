@@ -20,7 +20,6 @@ namespace Status {
 		Accel.SetValue(false, 0.0);
 		A_Accel.SetValue(false, 0.0);
 
-		Sensor::Reset();
 		GyroCtrlFlag.SetValue(true);
 	}
 
@@ -425,6 +424,8 @@ namespace Status {
 				diff[cnt2] = 0;
 			}
 		}
+
+		System::Timer::wait_ms(SENSOR_DIFF_PAST_MS);
 	}
 
 	void Sensor::SetValue(uint16_t on[SENSOR_AMOUNT], uint16_t off[SENSOR_AMOUNT]) {
@@ -2102,8 +2103,9 @@ namespace Mystat {
 	}
 
 	void Map::MakePath (unsigned int velocity, unsigned int turn_velocity, unsigned int slant_velocity, unsigned int accel, unsigned int slant_accel) {
-		unsigned char check_x = 0, check_y = 1, next_x = 0, next_y = 0;
-		unsigned int path_cnt = 1, path_long = 0;
+		int8_t last_dir = 0;
+		uint8_t check_x = 0, check_y = 1, next_x = 0, next_y = 0;
+		uint16_t path_cnt = 1, path_long = 0;
 		char senddata[127];
 
 //		Map::velocity = (float)velocity;
@@ -2203,6 +2205,7 @@ namespace Mystat {
 
 			check_x = next_x;
 			check_y = next_y;
+			last_dir = path.dir[path_cnt];
 
             path_cnt++;
 
@@ -2212,25 +2215,27 @@ namespace Mystat {
         } while ((dijkstra.next_x[check_x][check_y] != 255) && (dijkstra.next_y[check_x][check_y] != 255));
 
         // 終点座標を自己位置座標に設定(最短走行後の復帰用)
-        switch (path.dir[path_cnt - 1]) {
+        switch (last_dir) {
         	case DIR_EAST:
-        		Position::Set(next_x + 1, next_y / 2, path.dir[path_cnt - 1]);
+        		Position::Set(next_x + 1, next_y / 2, last_dir);
         		break;
 
         	case DIR_WEST:
-        		Position::Set(next_x, next_y / 2, path.dir[path_cnt - 1]);
+        		Position::Set(next_x, next_y / 2, last_dir);
         		break;
 
         	case DIR_SOUTH:
-        		Position::Set(next_x, (next_y - 1) / 2, path.dir[path_cnt - 1]);
+        		Position::Set(next_x, ((next_y - 1) / 2), last_dir);
         		break;
 
         	case DIR_NORTH:
-        		Position::Set(next_x, (next_y + 1) / 2, path.dir[path_cnt - 1]);
+        		Position::Set(next_x, ((next_y + 1) / 2), last_dir);
         		break;
 
         	default:
-        		Position::Set(0, 0, 0);
+        		ExecuteFlag.SetValue(false);
+        		System::Interface::SetLEDColor(0, 255, 0, 0);
+        		System::Interface::SetLEDColor(1, 255, 0, 0);
         		break;
         }
 
