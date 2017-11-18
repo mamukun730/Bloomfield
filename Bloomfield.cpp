@@ -111,8 +111,8 @@ int main(void) {
 			System::Timer::wait_ms(1000);
 			Mystat::Position::Reset();
 
-			Mystat::Map::MakePath(500, 300, 300, 3000, 2500);
-			Mystat::Map::ReadPath(500, 300, 300, 3000, 2500);
+			Mystat::Map::MakePath(500, 300, 300, 3000, 2000);
+			Mystat::Map::ReadPath(500, 300, 300, 3000, 2000);
 		}
 
 		if (ExecuteFlag.GetValue()) {
@@ -134,8 +134,8 @@ int main(void) {
 			System::Timer::wait_ms(1000);
 			Mystat::Position::Reset();
 
-			Mystat::Map::MakePath(700, 300, 500, 4500, 2500);
-			Mystat::Map::ReadPath(700, 300, 500, 4500, 2500);
+			Mystat::Map::MakePath(800, 300, 600, 3000, 2000);
+			Mystat::Map::ReadPath(800, 300, 600, 3000, 2000);
 		}
 
 		if (ExecuteFlag.GetValue()) {

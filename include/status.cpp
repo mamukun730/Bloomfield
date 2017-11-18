@@ -89,7 +89,7 @@ namespace Status {
 				flag_r_01 = false, flag_r_02 = false, flag_r_wall = false,
 				wall_bothside = false, start = false;
 
-		if ((distance >= 45.0) && (distance <= 85.0) && !start) {
+		if ((Velocity.GetValue(false) > (SEARCH_SPEED - 10.0)) && (distance >= 45.0) && (distance <= 85.0) && !start) {
 			if (Status::Sensor::GetValue(Status::Sensor::F, false) > SENSOR_WALL_EXIST_F_NEAR) {		// 袋小路で時々壁切れモードに入るのなんで
 				wall_bothside = false;
 			} else if ((Status::Sensor::GetValue(Status::Sensor::LS, false) > SENSOR_WALL_EXIST_L)
